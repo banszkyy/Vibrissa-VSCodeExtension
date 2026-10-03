@@ -174,7 +174,7 @@
                 "title": "Debug File",
                 "enablement": "!inDebugMode",
                 "icon": "$(debug-alt)",
-                "when": "resourceLangId == bbc && !virtualWorkspace"
+                "when": "isWorkspaceTrusted && resourceLangId == bbc && !virtualWorkspace"
             },
             {
                 "command": "bbc.profileEditorContents",
@@ -182,7 +182,7 @@
                 "title": "Profile File",
                 "enablement": "!inDebugMode",
                 "icon": "$(flame)",
-                "when": "resourceLangId == bbc && !virtualWorkspace"
+                "when": "isWorkspaceTrusted && resourceLangId == bbc && !virtualWorkspace"
             },
             {
                 "command": "bbc.executeEditorContents",
@@ -190,24 +190,25 @@
                 "title": "Run File",
                 "shortTitle": "Run File",
                 "icon": "$(run)",
-                "when": "resourceLangId == bbc && !virtualWorkspace"
+                "when": "isWorkspaceTrusted && resourceLangId == bbc && !virtualWorkspace"
             },
             {
                 "command": "bbc.update",
                 "category": "BBLang",
                 "title": "Update Binaries",
-                "when": "!virtualWorkspace"
+                "when": "isWorkspaceTrusted && !virtualWorkspace"
             },
             {
                 "command": "bbc.languageServer.restart",
                 "category": "BBLang",
-                "title": "Restart Language Server"
+                "title": "Restart Language Server",
+                "when": "isWorkspaceTrusted"
             },
             {
                 "command": "bbc.profiling.start",
                 "category": "BBLang",
                 "title": "Start profiling active debug session",
-                "when": "inDebugMode && debugType == 'bbc'",
+                "when": "isWorkspaceTrusted && inDebugMode && debugType == 'bbc'",
                 "icon": "$(flame)",
                 "shortTitle": "Start profiling"
             },
@@ -215,9 +216,15 @@
                 "command": "bbc.profiling.stop",
                 "category": "BBLang",
                 "title": "Stop profiling active debug session",
-                "when": "inDebugMode && debugType == 'bbc'",
+                "when": "isWorkspaceTrusted && inDebugMode && debugType == 'bbc'",
                 "icon": "$(flame)",
                 "shortTitle": "Stop profiling"
+            },
+            {
+                "command": "bbc.recompile",
+                "category": "BBLang",
+                "title": "Recompile",
+                "when": "isWorkspaceTrusted"
             }
         ],
         "breakpoints": [
@@ -287,42 +294,42 @@
                 {
                     "command": "bbc.executeEditorContents",
                     "group": "bbc",
-                    "when": "resourceLangId == bbc && !virtualWorkspace"
+                    "when": "isWorkspaceTrusted && resourceLangId == bbc && !virtualWorkspace"
                 }
             ],
             "editor/title/context": [
                 {
                     "command": "bbc.executeEditorContents",
                     "group": "bbc",
-                    "when": "resourceLangId == bbc && !virtualWorkspace"
+                    "when": "isWorkspaceTrusted && resourceLangId == bbc && !virtualWorkspace"
                 }
             ],
             "editor/title/run": [
                 {
                     "command": "bbc.debugEditorContents",
                     "group": "bbc",
-                    "when": "resourceLangId == bbc && !virtualWorkspace"
+                    "when": "isWorkspaceTrusted && resourceLangId == bbc && !virtualWorkspace"
                 },
                 {
                     "command": "bbc.profileEditorContents",
                     "group": "bbc",
-                    "when": "resourceLangId == bbc && !virtualWorkspace"
+                    "when": "isWorkspaceTrusted && resourceLangId == bbc && !virtualWorkspace"
                 },
                 {
                     "command": "bbc.executeEditorContents",
                     "group": "bbc",
-                    "when": "resourceLangId == bbc && !virtualWorkspace"
+                    "when": "isWorkspaceTrusted && resourceLangId == bbc && !virtualWorkspace"
                 }
             ],
             "debug/toolBar": [
                 {
                     "command": "bbc.profiling.start",
-                    "when": "debugType == 'bbc' && !bbc.isProfiling",
+                    "when": "isWorkspaceTrusted && debugType == 'bbc' && !bbc.isProfiling",
                     "group": "navigation"
                 },
                 {
                     "command": "bbc.profiling.stop",
-                    "when": "debugType == 'bbc' && bbc.isProfiling",
+                    "when": "isWorkspaceTrusted && debugType == 'bbc' && bbc.isProfiling",
                     "group": "navigation"
                 }
             ]
@@ -347,7 +354,11 @@
                     ]
                 }
             }
-        ]
+        ],
+        "untrustedWorkspaces": {
+            "supported": "limited",
+            "description": "Debugging and rich language features will be disabled in restricted mode"
+        }
     },
     "scripts": {
         "compile": "./clean && tsc --project ./",

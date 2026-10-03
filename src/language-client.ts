@@ -26,6 +26,28 @@ export function activate(context: vscode.ExtensionContext) {
         }
     }))
 
+    context.subscriptions.push(vscode.commands.registerCommand(`${utils.languageId}.recompile`, (file?: vscode.Uri) => {
+        if (!client?.client) return
+
+        if (!file) {
+            file = vscode.window.activeTextEditor?.document.uri
+        }
+
+        if (!file) {
+            log.warn(`[Language] Cannot recompile because no file provided`)
+            return
+        }
+
+        log.info(`[Language] Requesting recompile ...`)
+        client.client.sendRequest('bblang/compiler/recompile', { file: file.toString() })
+            .then(res => {
+                log.info(`[Language] Recompiling`, res)
+            })
+            .catch(err => {
+                log.error(err)
+            })
+    }))
+
     context.subscriptions.push(vscode.commands.registerCommand(`${utils.languageId}.languageServer.restart`, () => {
         restartServer(context)
     }))
@@ -71,7 +93,7 @@ export class LanguageClientManager implements Disposable {
     private readonly context: vscode.ExtensionContext
     private readonly outputChannel: vscode.LogOutputChannel
 
-    private compilerStatusBarItem: vscode.StatusBarItem | null
+    private compilerStatusBarItem: vscode.LanguageStatusItem | null
     private compilerStatusCooldown: NodeJS.Timeout | null
 
     constructor(context: vscode.ExtensionContext, serverPath: string, args: string[] = []) {
@@ -130,32 +152,37 @@ export class LanguageClientManager implements Disposable {
         this.compilerStatusCooldown = null
 
         this.client.onNotification('bblang/compiler/status', (status: CompilerStatusNotificationArgs) => {
-            log.trace(JSON.stringify(status, null, ' '))
             if (this.compilerStatusCooldown) clearTimeout(this.compilerStatusCooldown)
             this.compilerStatusCooldown = setTimeout(() => {
-                if (status.status !== 'done') {
-                    if (!this.compilerStatusBarItem) {
-                        this.compilerStatusBarItem = vscode.window.createStatusBarItem('bblang-compiler')
-                        this.compilerStatusBarItem.name = `BBLang Compiler`
-                        context.subscriptions.push(this.compilerStatusBarItem)
-                    }
-                    this.compilerStatusBarItem.show()
-
-                    if (status.status === 'working') {
-                        this.compilerStatusBarItem.text = `$(loading~spin) Compiling`
-                        this.compilerStatusBarItem.backgroundColor = undefined
-                        this.compilerStatusBarItem.color = undefined
-                    } else if (status.status === 'failed') {
-                        this.compilerStatusBarItem.text = `$(error) Compiling`
-                        this.compilerStatusBarItem.backgroundColor = new vscode.ThemeColor('statusBarItem.errorBackground')
-                        this.compilerStatusBarItem.color = new vscode.ThemeColor('statusBarItem.errorForeground')
-                    }
-
-                    this.compilerStatusBarItem.tooltip = status.details ?? undefined
-                } else {
-                    this.compilerStatusBarItem?.hide()
+                if (!this.compilerStatusBarItem) {
+                    this.compilerStatusBarItem = vscode.languages.createLanguageStatusItem(`bblang-compiler-status`, { language: utils.languageId })
+                    this.compilerStatusBarItem.name = `BBLang Compiler Status`
+                    context.subscriptions.push(this.compilerStatusBarItem)
                 }
-            }, 200)
+
+                switch (status.status) {
+                    case 'done':
+                        this.compilerStatusBarItem.text = `Compiled`
+                        this.compilerStatusBarItem.busy = false
+                        this.compilerStatusBarItem.severity = vscode.LanguageStatusSeverity.Information
+                        this.compilerStatusBarItem.command = { command: `${utils.languageId}.recompile`, title: 'Recompile', arguments: [] }
+                        break
+                    case 'working':
+                        this.compilerStatusBarItem.text = `Compiling`
+                        this.compilerStatusBarItem.busy = true
+                        this.compilerStatusBarItem.severity = vscode.LanguageStatusSeverity.Information
+                        this.compilerStatusBarItem.command = undefined
+                        break
+                    case 'failed':
+                        this.compilerStatusBarItem.text = `Failed`
+                        this.compilerStatusBarItem.busy = false
+                        this.compilerStatusBarItem.severity = vscode.LanguageStatusSeverity.Error
+                        this.compilerStatusBarItem.command = { command: `${utils.languageId}.recompile`, title: 'Recompile', arguments: [] }
+                        break
+                }
+
+                this.compilerStatusBarItem.detail = status.details ?? undefined
+            }, 100)
         })
 
         let projectStatusBarItem: vscode.StatusBarItem | null = null
@@ -164,12 +191,15 @@ export class LanguageClientManager implements Disposable {
         this.client.onNotification('bblang/project/status', (status: ProjectStatusNotificationArgs) => {
             fileToProjectStatus.set(status.contextFile, status)
             if (vscode.window.activeTextEditor?.document) {
+                if (schemeIgnore.has(vscode.window.activeTextEditor.document.uri.scheme)) return
                 updateProjectStatus(vscode.window.activeTextEditor.document.uri)
             }
         })
 
         function updateProjectStatus(file: vscode.Uri) {
             const project = fileToProjectStatus.get(file.toString())
+            log.debug(`[Language] Project`, file, project)
+
             if (project) {
                 if (!projectStatusBarItem) {
                     projectStatusBarItem = vscode.window.createStatusBarItem('bblang-project')
@@ -180,12 +210,12 @@ export class LanguageClientManager implements Disposable {
 
                 if (project.projectType === 'project') {
                     projectStatusBarItem.text = `$(project) Project`
-                    projectStatusBarItem.tooltip = `${project.indexedFiles} files indexed\n${project.root}`
+                    projectStatusBarItem.tooltip = `${project.indexedFiles} files compiled\n${project.root}`
                     projectStatusBarItem.backgroundColor = undefined
                     projectStatusBarItem.color = undefined
                 } else if (project.projectType === 'file') {
                     projectStatusBarItem.text = `$(file) File`
-                    projectStatusBarItem.tooltip = `${project.indexedFiles} files indexed\n${project.root}`
+                    projectStatusBarItem.tooltip = `${project.indexedFiles} files compiled\n${project.root}`
                     projectStatusBarItem.backgroundColor = undefined
                     projectStatusBarItem.color = undefined
                 } else {
@@ -198,11 +228,29 @@ export class LanguageClientManager implements Disposable {
                 projectStatusBarItem?.hide()
             }
         }
+        const schemeIgnore = new Set<string>([
+            'output',
+            'vscode-scm',
+            'git',
+        ])
 
-        vscode.workspace.onDidOpenTextDocument(e => updateProjectStatus(e.uri))
-        vscode.workspace.onDidCloseTextDocument(e => updateProjectStatus(e.uri))
-        vscode.workspace.onDidChangeTextDocument(e => updateProjectStatus(e.document.uri))
-        vscode.window.onDidChangeActiveTextEditor(e => e && updateProjectStatus(e.document.uri))
+        vscode.workspace.onDidOpenTextDocument(e => {
+            if (schemeIgnore.has(e.uri.scheme)) return
+            updateProjectStatus(e.uri)
+        })
+        vscode.workspace.onDidCloseTextDocument(e => {
+            if (schemeIgnore.has(e.uri.scheme)) return
+            updateProjectStatus(e.uri)
+        })
+        vscode.workspace.onDidChangeTextDocument(e => {
+            if (schemeIgnore.has(e.document.uri.scheme)) return
+            updateProjectStatus(e.document.uri)
+        })
+        vscode.window.onDidChangeActiveTextEditor(e => {
+            if (!e) return
+            if (schemeIgnore.has(e.document.uri.scheme)) return
+            updateProjectStatus(e.document.uri)
+        })
 
         this.client.onNotification('window/logMessage', (message) => {
             switch (message.type) {

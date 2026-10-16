@@ -32,21 +32,28 @@ export function activate(context: vscode.ExtensionContext) {
 
                     if (executable) { return executable }
 
-                    const debuggerHostConfig = config.getConfig().debuggerHost;
-                    const path = debuggerHostConfig.path
+                    const debuggerHostConfig = config.getConfig(context).debuggerHost;
+                    const hostPath = debuggerHostConfig.path()
 
-                    if (!fs.existsSync(path)) {
-                        log.warn(`[Debugger] Debug server "${path}" not found`)
-                        vscode.window.showErrorMessage(`Debug server "${path}" not found`)
+                    if (!hostPath) {
+                        log.warn(`[Debugger] Debug server not set`)
+                        vscode.window.showErrorMessage(`Debug server not set`)
+                        return null
                     }
 
-                    log.info('[Debugger] Describe debug adapter as external')
+                    if (!fs.existsSync(hostPath)) {
+                        log.warn(`[Debugger] Debug server "${hostPath}" not found`)
+                        vscode.window.showErrorMessage(`Debug server "${hostPath}" not found`)
+                        return null
+                    }
+
+                    log.info(`[Debugger] Debug host at \"${hostPath}\"`)
 
                     const args = []
                     if (debuggerHostConfig.logPath) {
                         args.push(...["--log", debuggerHostConfig.logPath])
                     }
-                    return new vscode.DebugAdapterExecutable(path, args)
+                    return new vscode.DebugAdapterExecutable(hostPath, args)
                 }
             }()
             break

@@ -1,5 +1,4 @@
 import * as vscode from 'vscode'
-import * as path from 'path'
 import * as utils from './utils'
 
 const dotnetRID = (() => {
@@ -31,30 +30,43 @@ const executableFileExtension = (() => {
     }
 })()
 
-export function getConfig() {
+export function getConfig(context: vscode.ExtensionContext) {
     const config = vscode.workspace.getConfiguration(utils.extensionConfigName, vscode.window.activeTextEditor ? (vscode.workspace.getWorkspaceFolder(vscode.window.activeTextEditor.document.uri)?.uri ?? null) : null)
+    const getPath = (v: { id: string, pathConfigKey: string }) => {
+        let a = config.get<string | null>(v.pathConfigKey, null)
+        if (!a || a === '') a = null
+        let b: string | null = String(context.globalState.get(`pathto-${v.id}`))
+        if (!b || b === '') b = null
+        return a ?? b
+    }
     return Object.freeze({
         runtime: {
+            id: 'runtime',
+            executableFilename: `executableFileExtension${executableFileExtension}`,
             githubUsername: 'banszkyy',
             githubRepository: 'BBLang',
             githubAssetName: dotnetRID ? `${dotnetRID}.zip` : '',
-            path: config.get<string>('runtime.path', path.join(__dirname, 'runtime', `bblang${executableFileExtension}`)),
             pathConfigKey: 'runtime.path',
+            path() { return getPath(this) },
         },
         languageServer: {
+            id: 'languageserver',
+            executableFilename: `bblang_languageserver${executableFileExtension}`,
             githubUsername: 'banszkyy',
             githubRepository: 'BBLang-LanguageServer',
             githubAssetName: dotnetRID ? `${dotnetRID}.zip` : '',
-            path: config.get<string>('server.path', path.join(__dirname, 'language-server', `bblang_languageserver${executableFileExtension}`)),
             pathConfigKey: 'server.path',
+            path() { return getPath(this) },
         },
         debuggerHost: {
+            id: 'debughost',
+            executableFilename: `bblang_debughost${executableFileExtension}`,
             githubUsername: 'banszkyy',
             githubRepository: 'BBLang-DebugHost',
             githubAssetName: dotnetRID ? `${dotnetRID}.zip` : '',
-            path: config.get<string>('debug.server.path', path.join(__dirname, 'debug-server', `bblang_debughost${executableFileExtension}`)),
             pathConfigKey: 'debug.server.path',
             logPath: config.get<string>('debug.server.log'),
+            path() { return getPath(this) },
         },
     })
 }

@@ -9,20 +9,36 @@ import * as utils from './utils'
 import { log } from './extension'
 import * as config from './config'
 import * as fs from 'fs'
+import { AllocationDecorations } from './code-decorations'
 
 export let client: LanguageClientManager | null = null
+let decorations: AllocationDecorations | null = null
+export let globalStateChanged: vscode.EventEmitter<string>
 
 export function activate(context: vscode.ExtensionContext) {
     startServer(context)
 
+    context.subscriptions.push(globalStateChanged = new vscode.EventEmitter<string>())
+
+    const languageServerChanged = () => {
+        vscode.window.showInformationMessage(`Path to the language server was changed. Do you want to restart the server?`, 'Yes', 'No')
+            .then(e => {
+                if (e === 'Yes') {
+                    restartServer(context)
+                }
+            })
+    }
+
+    globalStateChanged.event(key => {
+        const c = config.getConfig(context)
+        if (key === `pathto-${c.languageServer.id}`) {
+            languageServerChanged()
+        }
+    })
+
     context.subscriptions.push(vscode.workspace.onDidChangeConfiguration(e => {
         if (e.affectsConfiguration(`${utils.extensionConfigName}.server.path`)) {
-            vscode.window.showInformationMessage(`Path to the language server was changed. Do you want to restart the server?`, ...['Yes', 'No'])
-                .then(e => {
-                    if (e === 'Yes') {
-                        restartServer(context)
-                    }
-                })
+            languageServerChanged()
         }
     }))
 
@@ -62,19 +78,32 @@ function restartServer(context: vscode.ExtensionContext) {
 }
 
 function startServer(context: vscode.ExtensionContext) {
-    const extConfig = config.getConfig()
+    const extConfig = config.getConfig(context)
+    const serverPath = extConfig.languageServer.path()
 
-    if (!fs.existsSync(extConfig.languageServer.path)) {
-        log.warn(`[Language] Language server not found at "${extConfig.languageServer.path}"`)
-        vscode.window.showErrorMessage(`Language server not found at "${extConfig.languageServer.path}"`)
+    if (!serverPath) {
+        log.warn(`[Language] Language server not set`)
+        vscode.window.showErrorMessage(`Language server not set`)
         return Promise.resolve()
     }
 
-    client = new LanguageClientManager(context, extConfig.languageServer.path)
+    if (!fs.existsSync(serverPath)) {
+        log.warn(`[Language] Language server "${serverPath}" not found`)
+        vscode.window.showErrorMessage(`Language server "${serverPath}" not found`)
+        return Promise.resolve()
+    }
+
+    log.trace(`[Language] Language server at \"${serverPath}\"`)
+
+    client = new LanguageClientManager(context, serverPath)
+    decorations?.dispose()
+    decorations = new AllocationDecorations(client.client, new Set<string>([utils.languageId]))
     return client.activate()
 }
 
 function stopServer() {
+    decorations?.dispose()
+    decorations = null
     if (!client) return Promise.resolve()
     return client.deactivate()
         .finally(() => {

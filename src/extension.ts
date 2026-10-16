@@ -3,7 +3,7 @@ import * as languageClient from './language-client'
 import * as debuggerClient from './debugger-client'
 import * as updater from './updater'
 import * as config from './config'
-import { isVirtualWorkspace, languageId } from './utils'
+import { extensionConfigName, isVirtualWorkspace, languageId } from './utils'
 import * as notebookSerializer from './notebook-serializer'
 import * as notebookController from './notebook-controller'
 import * as profiling from './profiling'
@@ -13,16 +13,22 @@ export let log: vscode.LogOutputChannel
 function activateTrusted(context: vscode.ExtensionContext) {
     const isVirtual = isVirtualWorkspace()
 
+    log.trace(`isVirtual: ${isVirtual}`)
+
     if (!isVirtual) {
         debuggerClient.activate(context)
         profiling.activate(context)
     }
+
+    updater.gc(context)
 
     languageClient.activate(context)
     notebookSerializer.activate(context)
     notebookController.activate(context)
 
     function interactiveUpdateAll() {
+        log.trace(`interactiveUpdateAll`)
+
         const interactiveUpdate = (updateConfig: updater.UpdateOptions, texts: {
             "UPDATE_AVALIABLE": string,
             "NOT_FOUND": string,
@@ -30,7 +36,13 @@ function activateTrusted(context: vscode.ExtensionContext) {
             "FAILED": string,
         }, deactivate: (() => void), activate: ((context: vscode.ExtensionContext) => void)): Promise<void> => {
             return new Promise((resolve, reject) => {
-                updater.checkForUpdates(updateConfig)
+                if (vscode.workspace.getConfiguration(extensionConfigName, vscode.window.activeTextEditor ? (vscode.workspace.getWorkspaceFolder(vscode.window.activeTextEditor.document.uri)?.uri ?? null) : null).get<string>(updateConfig.pathConfigKey)) {
+                    log.trace(`[Updater] ${updateConfig.id} is managed manually`)
+                    resolve()
+                    return
+                }
+
+                updater.checkForUpdates(context, updateConfig)
                     .then(result => {
                         if (result.status === updater.FetchUpdateStatus.NewVersion) {
                             vscode.window.showInformationMessage(
@@ -43,7 +55,7 @@ function activateTrusted(context: vscode.ExtensionContext) {
                                             location: vscode.ProgressLocation.Notification,
                                             cancellable: true,
                                             title: texts.PROGRESS,
-                                        }, (progress, token) => updater.update(updateConfig, progress, token)).then(() => {
+                                        }, (progress, token) => updater.update(context, updateConfig, progress, token)).then(() => {
                                             activate(context)
                                             resolve()
                                         }, (reason) => {
@@ -63,7 +75,7 @@ function activateTrusted(context: vscode.ExtensionContext) {
                                             location: vscode.ProgressLocation.Notification,
                                             cancellable: true,
                                             title: texts.PROGRESS,
-                                        }, (progress, token) => updater.update(updateConfig, progress, token)).then(() => {
+                                        }, (progress, token) => updater.update(context, updateConfig, progress, token)).then(() => {
                                             activate(context)
                                             resolve()
                                         }, (reason) => {
@@ -78,7 +90,7 @@ function activateTrusted(context: vscode.ExtensionContext) {
                                     }
                                 }, reject)
                         } else {
-                            log.trace(`[Updater] Up to date: ${updateConfig.path}`)
+                            log.trace(`[Updater] ${updateConfig.id} is up-to-date`)
                             resolve()
                         }
                     })
@@ -86,7 +98,7 @@ function activateTrusted(context: vscode.ExtensionContext) {
             })
         }
 
-        const extConfig = config.getConfig()
+        const extConfig = config.getConfig(context)
         const tasks = []
 
         tasks.push(interactiveUpdate(extConfig.languageServer, {

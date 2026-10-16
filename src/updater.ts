@@ -6,9 +6,9 @@ import * as vscode from 'vscode'
 import * as utils from './utils'
 import { log } from './extension'
 import { LatestRelease, LatestReleaseAsset } from './github-api-schemas'
+import { globalStateChanged } from './language-client'
 
 const userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36'
-const localUpdateInfoSuffix = '.update.json'
 
 export interface FetchUpdateResult {
     status: FetchUpdateStatus
@@ -23,15 +23,12 @@ export enum FetchUpdateStatus {
 }
 
 export type UpdateOptions = {
+    id: string
     githubUsername: string
     githubRepository: string
     githubAssetName: string
-    path: string
+    executableFilename: string
     pathConfigKey: string
-}
-
-export interface LocalUpdateMetadata {
-    updated_at: string
 }
 
 async function getLatestRelease(options: UpdateOptions, token: vscode.CancellationToken | null = null): Promise<LatestRelease> {
@@ -45,43 +42,28 @@ async function getLatestRelease(options: UpdateOptions, token: vscode.Cancellati
     return await utils.downloadJson<LatestRelease>(res, token)
 }
 
-export async function checkForUpdates(options: UpdateOptions, progress: vscode.Progress<{ message?: string | undefined; increment?: number | undefined }> | null = null, token: vscode.CancellationToken | null = null): Promise<FetchUpdateResult> {
-    if (!options.path) {
+export async function checkForUpdates(context: vscode.ExtensionContext, options: UpdateOptions, progress: vscode.Progress<{ message?: string | undefined; increment?: number | undefined }> | null = null, token: vscode.CancellationToken | null = null): Promise<FetchUpdateResult> {
+    const targetDirectory = path.join(context.globalStorageUri.fsPath, 'bin')
+
+    log.trace(`[Updater] Checking updates for ${options.id} ...`)
+
+    checkIfExists: {
+        if (fs.existsSync(targetDirectory)) {
+            for (const element of fs.readdirSync(targetDirectory, { encoding: 'utf8', recursive: false })) {
+                if (element.startsWith(`${options.id}-`)) {
+                    break checkIfExists
+                }
+            }
+        }
+
+        log.trace(`[Updater] Directory \"${targetDirectory}\" doesn't exists`)
         return {
             status: FetchUpdateStatus.Nonexistent,
             release: null,
         }
     }
 
-    log.trace(`[Updater] Checking updates for "${options.path}" ...`)
-
-    progress?.report({ message: 'Checking for local files' })
-
-    if (!fs.existsSync(options.path)) {
-        log.debug(`[Updater] File "${options.path}" doesn't exists`)
-        return {
-            status: FetchUpdateStatus.Nonexistent,
-            release: null,
-        }
-    }
-
-    const metaFilename = options.path + localUpdateInfoSuffix
-
-    if (!fs.existsSync(metaFilename)) {
-        log.trace(`[Updater] Meta file "${metaFilename}" doesn't exists`)
-        return {
-            status: FetchUpdateStatus.Untracked,
-            release: null,
-        }
-    }
-
-    const local = fs.existsSync(metaFilename) ? JSON.parse(fs.readFileSync(metaFilename, 'utf8')) : null
-
-    if (!local) {
-        log.trace(`[Updater] File "${options.path + localUpdateInfoSuffix}" doesn't exists`)
-    }
-
-    progress?.report({ message: 'Get latest release info' })
+    progress?.report({ message: 'Fetching latest release info' })
     log.trace(`[Updater] Getting latest release from "${options.githubRepository}"`)
     const latest = await getLatestRelease(options, token)
 
@@ -99,25 +81,35 @@ export async function checkForUpdates(options: UpdateOptions, progress: vscode.P
         throw new Error(`Asset "${options.githubAssetName}" doesn't exists in the latest release`)
     }
 
-    log.trace(`[Updater] Local version: \`${local?.updated_at}\` Latest version: \`${latestAsset.updated_at}\``)
+    log.trace(`[Updater]`, latestAsset)
 
-    if (!local || local.updated_at !== latestAsset.updated_at) {
+    const actualTargetDirectory = path.join(context.globalStorageUri.fsPath, 'bin', `${options.id}-${latest.id}`)
+    if (fs.existsSync(actualTargetDirectory)) {
+        log.trace(`[Updater]`, `Directory \"${actualTargetDirectory}\" exists`)
         return {
-            status: FetchUpdateStatus.NewVersion,
+            status: FetchUpdateStatus.UpToDate,
             release: latest,
         }
     } else {
+        log.trace(`[Updater]`, `Directory \"${actualTargetDirectory}\" doesn't exists`)
         return {
-            status: FetchUpdateStatus.UpToDate,
+            status: FetchUpdateStatus.NewVersion,
             release: latest,
         }
     }
 }
 
-export async function update(options: UpdateOptions, progress: vscode.Progress<{ message?: string | undefined; increment?: number | undefined }> | null = null, token: vscode.CancellationToken | null = null) {
-    log.debug(`[Updater] Updating "${options.path}"`)
+export function gc(context: vscode.ExtensionContext) {
+    const tempDirectory = path.join(context.globalStorageUri.fsPath, 'temp')
+    if (!fs.existsSync(tempDirectory)) return
+    log.trace(`[Updater] Removing directory \"${tempDirectory}\"`)
+    fs.rmSync(tempDirectory, { force: true, recursive: true })
+}
 
-    progress?.report({ message: 'Getting the latest release' })
+export async function update(context: vscode.ExtensionContext, options: UpdateOptions, progress: vscode.Progress<{ message?: string | undefined; increment?: number | undefined }> | null = null, token: vscode.CancellationToken | null = null) {
+    log.debug(`[Updater] Updating ${options.id}`)
+
+    progress?.report({ message: 'Fetching latest release info' })
     log.trace(`[Updater] Getting latest release from "${options.githubRepository}"`)
     const latest = await getLatestRelease(options, token)
 
@@ -136,21 +128,28 @@ export async function update(options: UpdateOptions, progress: vscode.Progress<{
         throw new Error(`Asset "${options.githubAssetName}" doesn't exists in the latest release`)
     }
 
-    progress?.report({ message: 'Preparing' })
+    log.trace(`[Updater]\n${JSON.stringify(latestAsset, null, ' ')}`)
 
-    const downloadToDir = path.join(__dirname, `download_${latestAsset.name}_${utils.getNonce()}`)
-    const downloadToFile = path.join(downloadToDir, latestAsset.name)
+    const tempDirectory = path.join(context.globalStorageUri.fsPath, 'temp', utils.getNonce())
+    const targetDirectory = path.join(context.globalStorageUri.fsPath, 'bin', `${options.id}-${latest.id}`)
 
-    if (!fs.existsSync(downloadToDir)) {
-        log.debug(`[Updater] Creating directory \"${downloadToDir}\"`)
-        fs.mkdirSync(downloadToDir, { recursive: true })
+    if (fs.existsSync(targetDirectory)) {
+        log.warn(`[Updater] Directory "${targetDirectory}" already exists`)
+        throw new Error(`Already exists`)
     }
 
-    log.trace(`[Updater] Opening file \"${downloadToFile}\" for writing`)
-    const file = fs.createWriteStream(downloadToFile)
+    progress?.report({ message: 'Preparing' })
+
+    fs.mkdirSync(tempDirectory, { recursive: true })
+    fs.mkdirSync(targetDirectory, { recursive: true })
+
+    const downloadFilename = path.join(tempDirectory, latestAsset.name)
+
+    log.trace(`[Updater] Opening file \"${downloadFilename}\" for writing`)
+    const file = fs.createWriteStream(downloadFilename)
     if (file.errored) {
         log.error(`[Updater]`, file.errored)
-        throw new Error(`Stream writer for file "${downloadToFile}" failed to create`)
+        throw new Error(`Stream writer for file "${downloadFilename}" failed to create`)
     }
 
     progress?.report({ message: 'Downloading release asset' })
@@ -161,23 +160,20 @@ export async function update(options: UpdateOptions, progress: vscode.Progress<{
         progress?.report({ message: 'Downloading release asset', increment: percent * 100 })
     })
 
-    progress?.report({ message: 'Wait 1 sec', increment: -100 })
-    await utils.sleep(1000)
-
-    progress?.report({ message: 'Removing existing files' })
-    log.trace(`[Updater] Removing directory \"${options.path}\"`)
-    fs.rmSync(options.path, { force: true, recursive: true })
-
     progress?.report({ message: 'Extracting' })
-    log.trace(`[Updater] Extracting \"${downloadToFile}\" to \"${options.path}\"`)
-    const zip = new AdmZip(downloadToFile)
-    zip.extractAllTo(path.join(options.path, '..'), true, true)
+    log.trace(`[Updater] Extracting \"${downloadFilename}\" to \"${targetDirectory}\"`)
+    const zip = new AdmZip(downloadFilename)
+    await zip.extractAllToAsync(targetDirectory, true, true)
 
-    progress?.report({ message: 'Removing temporary files' })
-    log.trace(`[Updater] Removing temporary directory \"${downloadToDir}\"`)
-    fs.rmSync(downloadToDir, { force: true, recursive: true })
+    if (fs.statSync(targetDirectory).isFile()) {
+        context.globalState.update(`pathto-${options.id}`, targetDirectory)
+        log.trace(`[Updater] Setting "pathto-${options.id}" to "${targetDirectory}"`)
+        globalStateChanged.fire(`pathto-${options.id}`)
+    } else {
+        context.globalState.update(`pathto-${options.id}`, path.join(targetDirectory, options.executableFilename))
+        log.trace(`[Updater] Setting "pathto-${options.id}" to "${path.join(targetDirectory, options.executableFilename)}"`)
+        globalStateChanged.fire(`pathto-${options.id}`)
+    }
 
-    log.trace(`[Updater] Writing update info to \"${options.path + localUpdateInfoSuffix}\"`)
-    const localUpdateInfo: LocalUpdateMetadata = latestAsset
-    fs.writeFileSync(options.path + localUpdateInfoSuffix, JSON.stringify(localUpdateInfo), 'utf8')
+    log.trace(`[Updater] Done`)
 }

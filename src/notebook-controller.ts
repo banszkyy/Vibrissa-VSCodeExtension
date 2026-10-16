@@ -6,7 +6,7 @@ import { log } from './extension'
 import * as rpc from 'vscode-jsonrpc/node'
 
 export function activate(context: vscode.ExtensionContext) {
-    context.subscriptions.push(new BBLangNotebookController())
+    context.subscriptions.push(new BBLangNotebookController(context))
 }
 
 export class BBLangNotebookController implements vscode.Disposable {
@@ -16,14 +16,16 @@ export class BBLangNotebookController implements vscode.Disposable {
     static readonly supportedLanguages = ['bbc']
 
     private readonly controller: vscode.NotebookController
+    private readonly context: vscode.ExtensionContext
     private executionOrder = 0
 
-    constructor() {
+    constructor(context: vscode.ExtensionContext) {
         this.controller = vscode.notebooks.createNotebookController(
             BBLangNotebookController.controllerId,
             BBLangNotebookController.notebookType,
             BBLangNotebookController.label
         )
+        this.context = context
 
         this.controller.supportedLanguages = BBLangNotebookController.supportedLanguages
         this.controller.supportsExecutionOrder = true
@@ -49,9 +51,18 @@ export class BBLangNotebookController implements vscode.Disposable {
         execution.executionOrder = ++this.executionOrder
         execution.start(Date.now())
 
-        const extConfig = config.getConfig()
+        const extConfig = config.getConfig(this.context)
+        const runtimePath = extConfig.runtime.path()
 
-        if (!fs.existsSync(extConfig.runtime.path)) {
+        if (!runtimePath) {
+            await execution.replaceOutput(new vscode.NotebookCellOutput([
+                vscode.NotebookCellOutputItem.text(`Runtime not set`)
+            ]))
+            execution.end(false)
+            return
+        }
+
+        if (!fs.existsSync(runtimePath)) {
             await execution.replaceOutput(new vscode.NotebookCellOutput([
                 vscode.NotebookCellOutputItem.text(`Runtime not found`)
             ]))
@@ -67,6 +78,24 @@ export class BBLangNotebookController implements vscode.Disposable {
             let result = 0
 
             await execution.clearOutput()
+
+            const runtimePath = extConfig.runtime.path()
+
+            if (!runtimePath) {
+                await execution.replaceOutput(new vscode.NotebookCellOutput([
+                    vscode.NotebookCellOutputItem.text(`Runtime not set`)
+                ]))
+                execution.end(false)
+                return
+            }
+
+            if (!fs.existsSync(runtimePath)) {
+                await execution.replaceOutput(new vscode.NotebookCellOutput([
+                    vscode.NotebookCellOutputItem.text(`Runtime not found`)
+                ]))
+                execution.end(false)
+                return
+            }
 
             let updateCellsLateTimeout: NodeJS.Timeout | null = null
             const updateCells = () => {
@@ -90,8 +119,8 @@ export class BBLangNotebookController implements vscode.Disposable {
                 '--uri', cell.notebook.uri.toString(),
                 `data:${btoa(cell.document.getText())}`
             ]
-            log.trace(`[Runtime] Spawning process "${extConfig.runtime.path}" ${args.map(v => `"${v}"`).join(' ')}`)
-            const proc = childProcess.spawn(extConfig.runtime.path, args)
+            log.trace(`[Runtime] Spawning process "${runtimePath}" ${args.map(v => `"${v}"`).join(' ')}`)
+            const proc = childProcess.spawn(runtimePath, args)
             proc.addListener('spawn', () => {
                 log.trace(`[Runtime] Spawned`)
             })

@@ -1,9 +1,9 @@
 {
     "name": "bblang",
-    "description": "Extension for BBLang",
+    "description": "Extension for Vibrissa",
     "author": "Bánszky",
     "version": "0.1.0",
-    "displayName": "BBLang",
+    "displayName": "Vibrissa",
     "private": true,
     "preview": true,
     "engines": {
@@ -15,9 +15,9 @@
         "Debuggers"
     ],
     "keywords": [
-        "bblang",
-        "bbc",
-        "bbl",
+        "vibrissa",
+        "meow",
+        "vi",
         "banszky"
     ],
     "pricing": "Free",
@@ -36,25 +36,25 @@
     "main": "./out/extension",
     "contributes": {
         "configuration": {
-            "title": "BBLang",
+            "title": "Vibrissa",
             "type": "object",
             "properties": {
-                "bblang.server.path": {
+                "vibrissa.server.path": {
                     "type": "string",
                     "description": "Path of the language server binary",
                     "scope": "machine-overridable"
                 },
-                "bblang.runtime.path": {
+                "vibrissa.runtime.path": {
                     "type": "string",
                     "description": "Path of the runtime binary",
                     "scope": "machine-overridable"
                 },
-                "bblang.debug.server.path": {
+                "vibrissa.debug.server.path": {
                     "type": "string",
                     "description": "Path of the debugger host binary",
                     "scope": "machine-overridable"
                 },
-                "bblang.debug.server.log": {
+                "vibrissa.debug.server.log": {
                     "type": "string",
                     "description": "File path to save debugger host logs",
                     "scope": "machine-overridable"
@@ -63,33 +63,33 @@
         },
         "languages": [
             {
-                "id": "bbc",
+                "id": "vibrissa",
                 "aliases": [
-                    "BBLang",
-                    "bbc"
+                    "Vibrissa",
+                    "vi"
                 ],
                 "extensions": [
-                    ".bbc"
+                    ".vi"
                 ],
-                "configuration": "./langs/bblang.json",
+                "configuration": "./langs/meow.json",
                 "icon": {
-                    "dark": "./icons/files/bbc.svg",
-                    "light": "./icons/files/bbc.svg"
+                    "dark": "./icons/files/meow.svg",
+                    "light": "./icons/files/meow.svg"
                 }
             },
             {
-                "id": "bblang-test-result",
+                "id": "vibrissa-test-result",
                 "aliases": [],
                 "extensions": [
                     ".result"
                 ],
                 "icon": {
-                    "dark": "./icons/files/bbc-result.svg",
-                    "light": "./icons/files/bbc-result.svg"
+                    "dark": "./icons/files/meow-result.svg",
+                    "light": "./icons/files/meow-result.svg"
                 }
             },
             {
-                "id": "bblang-il",
+                "id": "vibrissa-il",
                 "aliases": [
                     "bbil"
                 ],
@@ -97,30 +97,30 @@
                     ".bbil"
                 ],
                 "icon": {
-                    "dark": "./icons/files/bbc-il.svg",
-                    "light": "./icons/files/bbc-il.svg"
+                    "dark": "./icons/files/meow-il.svg",
+                    "light": "./icons/files/meow-il.svg"
                 }
             },
             {
-                "id": "bblang-notebook",
+                "id": "vibrissa-notebook",
                 "aliases": [],
                 "extensions": [
                     ".bbnb"
                 ],
                 "icon": {
-                    "dark": "./icons/files/bbc-notebook.svg",
-                    "light": "./icons/files/bbc-notebook.svg"
+                    "dark": "./icons/files/meow-notebook.svg",
+                    "light": "./icons/files/meow-notebook.svg"
                 }
             },
             {
-                "id": "bblang-config",
+                "id": "vibrissa-config",
                 "aliases": [],
                 "filenames": [
-                    "bbl.conf"
+                    "vi.conf"
                 ],
                 "icon": {
-                    "dark": "./icons/files/bbc-config.svg",
-                    "light": "./icons/files/bbc-config.svg"
+                    "dark": "./icons/files/meow-config.svg",
+                    "light": "./icons/files/meow-config.svg"
                 }
             },
             {
@@ -137,19 +137,19 @@
         ],
         "grammars": [
             {
-                "language": "bbc",
-                "scopeName": "source.bbc",
-                "path": "./syntax/bblang.json"
+                "language": "vibrissa",
+                "scopeName": "source.vi",
+                "path": "./syntax/meow.json"
             },
             {
-                "language": "bblang-test-result",
+                "language": "vibrissa-test-result",
                 "scopeName": "source.result",
-                "path": "./syntax/bblang-test-result.json"
+                "path": "./syntax/meow-test-result.json"
             },
             {
-                "language": "bblang-il",
+                "language": "vibrissa-il",
                 "scopeName": "source.bbil",
-                "path": "./syntax/bblang-il.json"
+                "path": "./syntax/meow-il.json"
             },
             {
                 "language": "msil",
@@ -159,87 +159,87 @@
         ],
         "snippets": [
             {
-                "language": "bbc",
-                "path": "./snippets/bblang.json"
+                "language": "vibrissa",
+                "path": "./snippets/meow.json"
             },
             {
-                "language": "bblang-test-result",
-                "path": "./snippets/bblang-test-result.json"
+                "language": "vibrissa-test-result",
+                "path": "./snippets/meow-test-result.json"
             }
         ],
         "commands": [
             {
-                "command": "bbc.debugEditorContents",
-                "category": "BBLang",
+                "command": "vibrissa.debugEditorContents",
+                "category": "Vibrissa",
                 "title": "Debug File",
                 "enablement": "!inDebugMode",
                 "icon": "$(debug-alt)",
-                "when": "isWorkspaceTrusted && resourceLangId == bbc && !virtualWorkspace"
+                "when": "isWorkspaceTrusted && resourceLangId == vibrissa && !virtualWorkspace"
             },
             {
-                "command": "bbc.profileEditorContents",
-                "category": "BBLang",
+                "command": "vibrissa.profileEditorContents",
+                "category": "Vibrissa",
                 "title": "Profile File",
                 "enablement": "!inDebugMode",
                 "icon": "$(flame)",
-                "when": "isWorkspaceTrusted && resourceLangId == bbc && !virtualWorkspace"
+                "when": "isWorkspaceTrusted && resourceLangId == vibrissa && !virtualWorkspace"
             },
             {
-                "command": "bbc.executeEditorContents",
-                "category": "BBLang",
+                "command": "vibrissa.executeEditorContents",
+                "category": "Vibrissa",
                 "title": "Run File",
                 "shortTitle": "Run File",
                 "icon": "$(run)",
-                "when": "isWorkspaceTrusted && resourceLangId == bbc && !virtualWorkspace"
+                "when": "isWorkspaceTrusted && resourceLangId == vibrissa && !virtualWorkspace"
             },
             {
-                "command": "bbc.update",
-                "category": "BBLang",
+                "command": "vibrissa.update",
+                "category": "Vibrissa",
                 "title": "Update Binaries",
                 "when": "isWorkspaceTrusted && !virtualWorkspace"
             },
             {
-                "command": "bbc.languageServer.restart",
-                "category": "BBLang",
+                "command": "vibrissa.languageServer.restart",
+                "category": "Vibrissa",
                 "title": "Restart Language Server",
                 "when": "isWorkspaceTrusted"
             },
             {
-                "command": "bbc.profiling.start",
-                "category": "BBLang",
+                "command": "vibrissa.profiling.start",
+                "category": "Vibrissa",
                 "title": "Start profiling active debug session",
-                "when": "isWorkspaceTrusted && inDebugMode && debugType == 'bbc'",
+                "when": "isWorkspaceTrusted && inDebugMode && debugType == 'vibrissa'",
                 "icon": "$(flame)",
                 "shortTitle": "Start profiling"
             },
             {
-                "command": "bbc.profiling.stop",
-                "category": "BBLang",
+                "command": "vibrissa.profiling.stop",
+                "category": "Vibrissa",
                 "title": "Stop profiling active debug session",
-                "when": "isWorkspaceTrusted && inDebugMode && debugType == 'bbc'",
+                "when": "isWorkspaceTrusted && inDebugMode && debugType == 'vibrissa'",
                 "icon": "$(flame)",
                 "shortTitle": "Stop profiling"
             },
             {
-                "command": "bbc.recompile",
-                "category": "BBLang",
+                "command": "vibrissa.recompile",
+                "category": "Vibrissa",
                 "title": "Recompile",
                 "when": "isWorkspaceTrusted"
             }
         ],
         "breakpoints": [
             {
-                "language": "bbc",
+                "language": "vibrissa",
                 "when": "!virtualWorkspace"
             }
         ],
         "debuggers": [
             {
-                "type": "bbc",
+                "type": "vibrissa",
                 "languages": [
-                    "bbc"
+                    "vibrissa"
                 ],
-                "label": "BBLang Debug",
+                "label": "Vibrissa Debug",
                 "configurationAttributes": {
                     "launch": {
                         "required": [
@@ -266,7 +266,7 @@
                 },
                 "initialConfigurations": [
                     {
-                        "type": "bbc",
+                        "type": "vibrissa",
                         "request": "launch",
                         "name": "Ask for file name",
                         "program": "${workspaceFolder}/${command:AskForProgramName}",
@@ -275,10 +275,10 @@
                 ],
                 "configurationSnippets": [
                     {
-                        "label": "BBLang Debug: Launch",
+                        "label": "Vibrissa Debug: Launch",
                         "description": "A new configuration for 'debugging' a user selected file.",
                         "body": {
-                            "type": "bbc",
+                            "type": "vibrissa",
                             "request": "launch",
                             "name": "Ask for file name",
                             "program": "^\"\\${workspaceFolder}/\\${command:AskForProgramName}\"",
@@ -292,52 +292,52 @@
         "menus": {
             "explorer/context": [
                 {
-                    "command": "bbc.executeEditorContents",
-                    "group": "bbc",
-                    "when": "isWorkspaceTrusted && resourceLangId == bbc && !virtualWorkspace"
+                    "command": "vibrissa.executeEditorContents",
+                    "group": "vibrissa",
+                    "when": "isWorkspaceTrusted && resourceLangId == vibrissa && !virtualWorkspace"
                 }
             ],
             "editor/title/context": [
                 {
-                    "command": "bbc.executeEditorContents",
-                    "group": "bbc",
-                    "when": "isWorkspaceTrusted && resourceLangId == bbc && !virtualWorkspace"
+                    "command": "vibrissa.executeEditorContents",
+                    "group": "vibrissa",
+                    "when": "isWorkspaceTrusted && resourceLangId == vibrissa && !virtualWorkspace"
                 }
             ],
             "editor/title/run": [
                 {
-                    "command": "bbc.debugEditorContents",
-                    "group": "bbc",
-                    "when": "isWorkspaceTrusted && resourceLangId == bbc && !virtualWorkspace"
+                    "command": "vibrissa.debugEditorContents",
+                    "group": "vibrissa",
+                    "when": "isWorkspaceTrusted && resourceLangId == vibrissa && !virtualWorkspace"
                 },
                 {
-                    "command": "bbc.profileEditorContents",
-                    "group": "bbc",
-                    "when": "isWorkspaceTrusted && resourceLangId == bbc && !virtualWorkspace"
+                    "command": "vibrissa.profileEditorContents",
+                    "group": "vibrissa",
+                    "when": "isWorkspaceTrusted && resourceLangId == vibrissa && !virtualWorkspace"
                 },
                 {
-                    "command": "bbc.executeEditorContents",
-                    "group": "bbc",
-                    "when": "isWorkspaceTrusted && resourceLangId == bbc && !virtualWorkspace"
+                    "command": "vibrissa.executeEditorContents",
+                    "group": "vibrissa",
+                    "when": "isWorkspaceTrusted && resourceLangId == vibrissa && !virtualWorkspace"
                 }
             ],
             "debug/toolBar": [
                 {
-                    "command": "bbc.profiling.start",
-                    "when": "isWorkspaceTrusted && debugType == 'bbc' && !bbc.isProfiling",
+                    "command": "vibrissa.profiling.start",
+                    "when": "isWorkspaceTrusted && debugType == 'vibrissa' && !vibrissa.isProfiling",
                     "group": "navigation"
                 },
                 {
-                    "command": "bbc.profiling.stop",
-                    "when": "isWorkspaceTrusted && debugType == 'bbc' && bbc.isProfiling",
+                    "command": "vibrissa.profiling.stop",
+                    "when": "isWorkspaceTrusted && debugType == 'vibrissa' && vibrissa.isProfiling",
                     "group": "navigation"
                 }
             ]
         },
         "notebooks": [
             {
-                "type": "bblang-notebook",
-                "displayName": "BBLang Notebook",
+                "type": "vibrissa-notebook",
+                "displayName": "Vibrissa Notebook",
                 "selector": [
                     {
                         "filenamePattern": "*.bbnb"
@@ -347,7 +347,7 @@
         ],
         "semanticTokenScopes": [
             {
-                "language": "bbc",
+                "language": "vibrissa",
                 "scopes": {
                     "keyword.meow": [
                         "keyword"
@@ -362,7 +362,7 @@
     },
     "scripts": {
         "compile": "./clean && tsc --project ./",
-        "package": "vsce package --out BBLangExtension.vsix",
+        "package": "vsce package --out VibrissaExtension.vsix",
         "list": "vsce ls"
     },
     "devDependencies": {

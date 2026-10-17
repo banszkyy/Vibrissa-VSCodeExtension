@@ -13,9 +13,9 @@ static class Program
 
     static void Main()
     {
-        File.WriteAllText(Path.Combine(GetProjectPath(), "..", "syntax", "bblang.json"), JsonSerializer.Serialize(BBLang.Generate(), Converter.JsonOptions));
+        File.WriteAllText(Path.Combine(GetProjectPath(), "..", "syntax", "meow.json"), JsonSerializer.Serialize(Source.Generate(), Converter.JsonOptions));
         File.WriteAllText(Path.Combine(GetProjectPath(), "..", "syntax", "msil.json"), JsonSerializer.Serialize(MSIL.Generate(), Converter.JsonOptions));
-        File.WriteAllText(Path.Combine(GetProjectPath(), "..", "syntax", "bblang-il.json"), JsonSerializer.Serialize(BBLangIL.Generate(), Converter.JsonOptions));
-        File.WriteAllText(Path.Combine(GetProjectPath(), "..", "syntax", "bblang-test-result.json"), JsonSerializer.Serialize(BBLangTestResult.Generate(), Converter.JsonOptions));
+        File.WriteAllText(Path.Combine(GetProjectPath(), "..", "syntax", "meow-il.json"), JsonSerializer.Serialize(VibrissaIL.Generate(), Converter.JsonOptions));
+        File.WriteAllText(Path.Combine(GetProjectPath(), "..", "syntax", "meow-test-result.json"), JsonSerializer.Serialize(TestResultSource.Generate(), Converter.JsonOptions));
     }
 }

@@ -201,7 +201,7 @@ export function activate(context: vscode.ExtensionContext) {
     //vscode.debug.onDidReceiveDebugSessionCustomEvent(e => log.trace('[Debugger] Custom event received:', e))
     vscode.debug.onDidChangeBreakpoints(e => log.trace('[Debugger] Breakpoints changed:', e))
 
-    const outputChannel = vscode.window.createOutputChannel("BBLang Debug Host", { log: true })
+    const outputChannel = vscode.window.createOutputChannel("Vibrissa Debug Host", { log: true })
 
     vscode.debug.onDidReceiveDebugSessionCustomEvent(e => {
         if (e.event === "adapterLog") {

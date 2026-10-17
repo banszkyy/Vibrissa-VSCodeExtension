@@ -31,7 +31,7 @@ const executableFileExtension = (() => {
 })()
 
 export function getConfig(context: vscode.ExtensionContext) {
-    const config = vscode.workspace.getConfiguration(utils.extensionConfigName, vscode.window.activeTextEditor ? (vscode.workspace.getWorkspaceFolder(vscode.window.activeTextEditor.document.uri)?.uri ?? null) : null)
+    const config = vscode.workspace.getConfiguration(utils.extensionId, vscode.window.activeTextEditor ? (vscode.workspace.getWorkspaceFolder(vscode.window.activeTextEditor.document.uri)?.uri ?? null) : null)
     const getPath = (v: { id: string, pathConfigKey: string }) => {
         let a = config.get<string | null>(v.pathConfigKey, null)
         if (!a || a === '') a = null
@@ -51,7 +51,7 @@ export function getConfig(context: vscode.ExtensionContext) {
         },
         languageServer: {
             id: 'languageserver',
-            executableFilename: `bblang_languageserver${executableFileExtension}`,
+            executableFilename: `vibrissa_languageserver${executableFileExtension}`,
             githubUsername: 'banszkyy',
             githubRepository: 'BBLang-LanguageServer',
             githubAssetName: dotnetRID ? `${dotnetRID}.zip` : '',
@@ -60,7 +60,7 @@ export function getConfig(context: vscode.ExtensionContext) {
         },
         debuggerHost: {
             id: 'debughost',
-            executableFilename: `bblang_debughost${executableFileExtension}`,
+            executableFilename: `vibrissa_debughost${executableFileExtension}`,
             githubUsername: 'banszkyy',
             githubRepository: 'BBLang-DebugHost',
             githubAssetName: dotnetRID ? `${dotnetRID}.zip` : '',
@@ -72,5 +72,5 @@ export function getConfig(context: vscode.ExtensionContext) {
 }
 
 export function goToConfig(config: string) {
-    vscode.commands.executeCommand('workbench.action.openSettings', `${utils.extensionConfigName}.${config}`)
+    vscode.commands.executeCommand('workbench.action.openSettings', `${utils.extensionId}.${config}`)
 }

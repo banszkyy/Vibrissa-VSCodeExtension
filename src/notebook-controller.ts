@@ -4,16 +4,17 @@ import * as config from './config'
 import * as childProcess from 'child_process'
 import { log } from './extension'
 import * as rpc from 'vscode-jsonrpc/node'
+import { languageId } from './utils'
 
 export function activate(context: vscode.ExtensionContext) {
-    context.subscriptions.push(new BBLangNotebookController(context))
+    context.subscriptions.push(new VibrissaNotebookController(context))
 }
 
-export class BBLangNotebookController implements vscode.Disposable {
-    static readonly controllerId = 'bblang-notebook-controller'
-    static readonly notebookType = 'bblang-notebook'
-    static readonly label = 'BBLang Notebook'
-    static readonly supportedLanguages = ['bbc']
+export class VibrissaNotebookController implements vscode.Disposable {
+    static readonly controllerId = 'vibrissa-notebook-controller'
+    static readonly notebookType = 'vibrissa-notebook'
+    static readonly label = 'Vibrissa Notebook'
+    static readonly supportedLanguages = [languageId]
 
     private readonly controller: vscode.NotebookController
     private readonly context: vscode.ExtensionContext
@@ -21,13 +22,13 @@ export class BBLangNotebookController implements vscode.Disposable {
 
     constructor(context: vscode.ExtensionContext) {
         this.controller = vscode.notebooks.createNotebookController(
-            BBLangNotebookController.controllerId,
-            BBLangNotebookController.notebookType,
-            BBLangNotebookController.label
+            VibrissaNotebookController.controllerId,
+            VibrissaNotebookController.notebookType,
+            VibrissaNotebookController.label
         )
         this.context = context
 
-        this.controller.supportedLanguages = BBLangNotebookController.supportedLanguages
+        this.controller.supportedLanguages = VibrissaNotebookController.supportedLanguages
         this.controller.supportsExecutionOrder = true
         this.controller.executeHandler = this.execute.bind(this)
     }

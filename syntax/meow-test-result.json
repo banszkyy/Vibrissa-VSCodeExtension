@@ -93,8 +93,8 @@
     }
   },
   "fileTypes": [
-    "bblang-test-result"
+    "vibrissa-test-result"
   ],
-  "name": "BBLang Test Result Language",
+  "name": "Vibrissa Test Result Language",
   "scopeName": "source.result"
 }

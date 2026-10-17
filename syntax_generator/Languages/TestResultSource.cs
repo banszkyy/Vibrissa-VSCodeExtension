@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace LanguageCore.SyntaxGenerator;
 
-static class BBLangTestResult
+static class TestResultSource
 {
     public static SyntaxFile Generate()
     {
@@ -86,8 +86,8 @@ static class BBLangTestResult
         return new SyntaxFile()
         {
             Schema = "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
-            Name = "BBLang Test Result Language",
-            FileTypes = ["bblang-test-result"],
+            Name = "Vibrissa Test Result Language",
+            FileTypes = ["vibrissa-test-result"],
             ScopeName = "source.result",
             Repository = repository,
             Patterns = [

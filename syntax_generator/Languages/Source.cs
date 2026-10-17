@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace LanguageCore.SyntaxGenerator;
 
-static class BBLang
+static class Source
 {
     public static SyntaxFile Generate()
     {
@@ -367,9 +367,9 @@ static class BBLang
         return new SyntaxFile()
         {
             Schema = "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
-            Name = "BBLang Language",
-            FileTypes = ["bbc"],
-            ScopeName = "source.bbc",
+            Name = "Vibrissa Language",
+            FileTypes = [LanguageConstants.LanguageExtension],
+            ScopeName = $"source{LanguageConstants.LanguageExtension}",
             Repository = repository,
             Patterns = [
                 new() { Include = "#hover-popup" },

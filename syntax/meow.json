@@ -427,8 +427,8 @@
     }
   },
   "fileTypes": [
-    "bbc"
+    ".vi"
   ],
-  "name": "BBLang Language",
-  "scopeName": "source.bbc"
+  "name": "Vibrissa Language",
+  "scopeName": "source.vi"
 }

@@ -3,7 +3,7 @@ import * as languageClient from './language-client'
 import * as debuggerClient from './debugger-client'
 import * as updater from './updater'
 import * as config from './config'
-import { extensionConfigName, isVirtualWorkspace, languageId } from './utils'
+import { extensionId, isVirtualWorkspace, languageId } from './utils'
 import * as notebookSerializer from './notebook-serializer'
 import * as notebookController from './notebook-controller'
 import * as profiling from './profiling'
@@ -36,7 +36,7 @@ function activateTrusted(context: vscode.ExtensionContext) {
             "FAILED": string,
         }, deactivate: (() => void), activate: ((context: vscode.ExtensionContext) => void)): Promise<void> => {
             return new Promise((resolve, reject) => {
-                if (vscode.workspace.getConfiguration(extensionConfigName, vscode.window.activeTextEditor ? (vscode.workspace.getWorkspaceFolder(vscode.window.activeTextEditor.document.uri)?.uri ?? null) : null).get<string>(updateConfig.pathConfigKey)) {
+                if (vscode.workspace.getConfiguration(extensionId, vscode.window.activeTextEditor ? (vscode.workspace.getWorkspaceFolder(vscode.window.activeTextEditor.document.uri)?.uri ?? null) : null).get<string>(updateConfig.pathConfigKey)) {
                     log.trace(`[Updater] ${updateConfig.id} is managed manually`)
                     resolve()
                     return
@@ -139,7 +139,7 @@ function activateTrusted(context: vscode.ExtensionContext) {
 }
 
 export function activate(context: vscode.ExtensionContext) {
-    log = vscode.window.createOutputChannel("BBLang Extension", { log: true })
+    log = vscode.window.createOutputChannel("Vibrissa Extension", { log: true })
 
     if (vscode.workspace.isTrusted) {
         activateTrusted(context)

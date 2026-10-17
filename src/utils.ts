@@ -1,9 +1,9 @@
 import * as fs from 'fs'
 import * as vscode from 'vscode'
 
-export const languageExtension = 'bbc'
-export const languageId = 'bbc'
-export const extensionConfigName = "bblang"
+export const extensionId = 'vibrissa'
+export const languageId = 'vibrissa'
+export const languageExtension = '.vi'
 
 export function isVirtualWorkspace(): boolean {
     return !!vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.every(f => f.uri.scheme !== 'file')

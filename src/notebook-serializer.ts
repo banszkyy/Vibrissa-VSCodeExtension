@@ -3,9 +3,10 @@
 import { TextDecoder, TextEncoder } from 'util'
 import * as vscode from 'vscode'
 import { log } from './extension'
+import { languageId } from './utils'
 
 export function activate(context: vscode.ExtensionContext) {
-    context.subscriptions.push(vscode.workspace.registerNotebookSerializer('bblang-notebook', new BBLangNotebookSerializer()))
+    context.subscriptions.push(vscode.workspace.registerNotebookSerializer('vibrissa-notebook', new VibrissaNotebookSerializer()))
 }
 
 interface RawNotebook {
@@ -19,7 +20,7 @@ interface RawNotebookCell {
 
 type RawCellType = 'code' | 'markdown'
 
-class BBLangNotebookSerializer implements vscode.NotebookSerializer {
+class VibrissaNotebookSerializer implements vscode.NotebookSerializer {
     async deserializeNotebook(content: Uint8Array, _token: vscode.CancellationToken): Promise<vscode.NotebookData> {
         const contents = new TextDecoder().decode(content)
 
@@ -34,7 +35,7 @@ class BBLangNotebookSerializer implements vscode.NotebookSerializer {
         return new vscode.NotebookData(raw.map(v => new vscode.NotebookCellData(
             v.cell_type === 'code' ? vscode.NotebookCellKind.Code : vscode.NotebookCellKind.Markup,
             v.source.join('\n'),
-            v.cell_type === 'code' ? 'bbc' : 'markdown'
+            v.cell_type === 'code' ? languageId : 'markdown'
         )))
     }
 

@@ -1,4 +1,4 @@
-# VSCode extension for [BBLang](https://github.com/banszkyy/BBLang)
+# VSCode extension for [Vibrissa](https://github.com/banszkyy/BBLang)
 
 [![VSCode 1.88.0](https://img.shields.io/badge/VSCode-1.88.0-0078d7.svg?logo=visual-studio-code&logoColor=white&style=flat-square)](#)
 [![win-x64](https://img.shields.io/badge/win-x64-0078D6?logoColor=white&style=flat-square)](#)

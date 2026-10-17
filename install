@@ -8,4 +8,4 @@ npm run compile
 
 npm run package
 
-code --profile "bb" --install-extension BBLangExtension.vsix --force
+code --profile "bb" --install-extension VibrissaExtension.vsix --force

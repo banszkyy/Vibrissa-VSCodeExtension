@@ -15,7 +15,7 @@ export interface AllocationsResult {
 }
 
 export const AllocationsRequest =
-  new RequestType<AllocationsParams, AllocationsResult, void>('bblang/decorations')
+  new RequestType<AllocationsParams, AllocationsResult, void>('meow/decorations')
 
 type Kind = AllocationItem['kind']
 

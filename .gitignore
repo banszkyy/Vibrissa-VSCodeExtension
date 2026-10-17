@@ -3,7 +3,7 @@
 /language-server
 /out
 
-/BBLangExtension.vsix
+/VibrissaExtension.vsix
 /package-lock.json
 
 syntax_generator/bin

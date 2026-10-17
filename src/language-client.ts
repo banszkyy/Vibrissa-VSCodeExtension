@@ -37,7 +37,7 @@ export function activate(context: vscode.ExtensionContext) {
     })
 
     context.subscriptions.push(vscode.workspace.onDidChangeConfiguration(e => {
-        if (e.affectsConfiguration(`${utils.extensionConfigName}.server.path`)) {
+        if (e.affectsConfiguration(`${utils.extensionId}.server.path`)) {
             languageServerChanged()
         }
     }))
@@ -55,7 +55,7 @@ export function activate(context: vscode.ExtensionContext) {
         }
 
         log.info(`[Language] Requesting recompile ...`)
-        client.client.sendRequest('bblang/compiler/recompile', { file: file.toString() })
+        client.client.sendRequest('meow/compiler/recompile', { file: file.toString() })
             .then(res => {
                 log.info(`[Language] Recompiling`, res)
             })
@@ -136,15 +136,15 @@ export class LanguageClientManager implements Disposable {
             },
         }
 
-        this.outputChannel = vscode.window.createOutputChannel('BBLang Language Server', { log: true })
+        this.outputChannel = vscode.window.createOutputChannel('Vibrissa Language Server', { log: true })
 
         const clientOptions: LanguageClientOptions = {
             documentSelector: [{
-                language: utils.languageExtension,
+                language: utils.languageId,
             }],
             synchronize: {
                 fileEvents: [
-                    vscode.workspace.createFileSystemWatcher('**/.bbc'),
+                    vscode.workspace.createFileSystemWatcher(`**/${utils.languageExtension}`),
                     vscode.workspace.createFileSystemWatcher('**/.bbnb')
                 ],
             },
@@ -159,8 +159,8 @@ export class LanguageClientManager implements Disposable {
         log.debug(`[Language] Language server is at "${serverPath}"`)
 
         this.client = new LanguageClient(
-            utils.extensionConfigName,
-            'BBLang Language Client',
+            utils.extensionId,
+            'Vibrissa Language Client',
             serverOptions,
             clientOptions
         )
@@ -180,12 +180,12 @@ export class LanguageClientManager implements Disposable {
         this.compilerStatusBarItem = null
         this.compilerStatusCooldown = null
 
-        this.client.onNotification('bblang/compiler/status', (status: CompilerStatusNotificationArgs) => {
+        this.client.onNotification('meow/compiler/status', (status: CompilerStatusNotificationArgs) => {
             if (this.compilerStatusCooldown) clearTimeout(this.compilerStatusCooldown)
             this.compilerStatusCooldown = setTimeout(() => {
                 if (!this.compilerStatusBarItem) {
-                    this.compilerStatusBarItem = vscode.languages.createLanguageStatusItem(`bblang-compiler-status`, { language: utils.languageId })
-                    this.compilerStatusBarItem.name = `BBLang Compiler Status`
+                    this.compilerStatusBarItem = vscode.languages.createLanguageStatusItem(`vibrissa-compiler-status`, { language: utils.languageId })
+                    this.compilerStatusBarItem.name = `Vibrissa Compiler Status`
                     context.subscriptions.push(this.compilerStatusBarItem)
                 }
 
@@ -217,7 +217,7 @@ export class LanguageClientManager implements Disposable {
         let projectStatusBarItem: vscode.StatusBarItem | null = null
         const fileToProjectStatus = new Map<string, ProjectStatusNotificationArgs>()
 
-        this.client.onNotification('bblang/project/status', (status: ProjectStatusNotificationArgs) => {
+        this.client.onNotification('meow/project/status', (status: ProjectStatusNotificationArgs) => {
             fileToProjectStatus.set(status.contextFile, status)
             if (vscode.window.activeTextEditor?.document) {
                 if (schemeIgnore.has(vscode.window.activeTextEditor.document.uri.scheme)) return
@@ -231,8 +231,8 @@ export class LanguageClientManager implements Disposable {
 
             if (project) {
                 if (!projectStatusBarItem) {
-                    projectStatusBarItem = vscode.window.createStatusBarItem('bblang-project')
-                    projectStatusBarItem.name = `BBLang Project`
+                    projectStatusBarItem = vscode.window.createStatusBarItem('vibrissa-project')
+                    projectStatusBarItem.name = `Vibrissa Project`
                     context.subscriptions.push(projectStatusBarItem)
                 }
                 projectStatusBarItem.show()

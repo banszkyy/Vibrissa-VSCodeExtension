@@ -24,11 +24,11 @@
     "publisher": "banszky",
     "repository": {
         "type": "git",
-        "url": "https://github.com/banszkyy/InterpreterVSCodeExtension"
+        "url": "https://github.com/banszkyy/Vibrissa-VSCodeExtension"
     },
     "markdown": "github",
     "icon": "icons/extension.png",
-    "homepage": "https://github.com/banszkyy/InterpreterVSCodeExtension",
+    "homepage": "https://github.com/banszkyy/Vibrissa-VSCodeExtension",
     "galleryBanner": {
         "color": "#2d1d37",
         "theme": "dark"

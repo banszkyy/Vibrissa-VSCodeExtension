@@ -356,9 +356,9 @@ export class LanguageClientManager implements Disposable {
     [Symbol.dispose]() { this.dispose() }
 
     public dispose() {
+        this.client?.serverProcess?.disconnect()
         this.client?.dispose()
         this.outputChannel?.dispose()
-        this.outputChannel.dispose()
         this.compilerStatusBarItem?.dispose()
         if (this.compilerStatusCooldown) clearTimeout(this.compilerStatusCooldown)
     }

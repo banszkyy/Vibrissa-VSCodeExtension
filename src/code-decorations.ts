@@ -11,7 +11,7 @@ export interface AllocationsParams {
 }
 export interface AllocationsResult {
   version: number
-  items: AllocationItem[]
+  items: AllocationItem[] | null
 }
 
 export const AllocationsRequest =
@@ -102,7 +102,7 @@ export class AllocationDecorations implements vscode.Disposable {
       )
       if (cts.token.isCancellationRequested) return
 
-      if (res.version !== document.version) {
+      if (res.items && res.version !== document.version) {
         this.schedule(document)
         return
       }

@@ -225,36 +225,48 @@ export class LanguageClientManager implements Disposable {
             }
         })
 
-        function updateProjectStatus(file: vscode.Uri) {
+        function updateProjectStatus(file?: vscode.Uri) {
+            if (!file) {
+                projectStatusBarItem?.hide()
+                return
+            }
+
             const project = fileToProjectStatus.get(file.toString())
             log.debug(`[Language] Project`, file, project)
 
-            if (project) {
-                if (!projectStatusBarItem) {
-                    projectStatusBarItem = vscode.window.createStatusBarItem('vibrissa-project')
-                    projectStatusBarItem.name = `Vibrissa Project`
-                    context.subscriptions.push(projectStatusBarItem)
-                }
-                projectStatusBarItem.show()
-
-                if (project.projectType === 'project') {
-                    projectStatusBarItem.text = `$(project) Project`
-                    projectStatusBarItem.tooltip = `${project.indexedFiles} files compiled\n${project.root}`
-                    projectStatusBarItem.backgroundColor = undefined
-                    projectStatusBarItem.color = undefined
-                } else if (project.projectType === 'file') {
-                    projectStatusBarItem.text = `$(file) File`
-                    projectStatusBarItem.tooltip = `${project.indexedFiles} files compiled\n${project.root}`
-                    projectStatusBarItem.backgroundColor = undefined
-                    projectStatusBarItem.color = undefined
-                } else {
-                    projectStatusBarItem.text = `$(warning) No Project`
-                    projectStatusBarItem.tooltip = undefined
-                    projectStatusBarItem.backgroundColor = new vscode.ThemeColor('statusBarItem.warningBackground')
-                    projectStatusBarItem.color = new vscode.ThemeColor('statusBarItem.warningForeground')
-                }
-            } else {
+            if (!project) {
                 projectStatusBarItem?.hide()
+                return
+            }
+
+            if (!projectStatusBarItem) {
+                projectStatusBarItem = vscode.window.createStatusBarItem('vibrissa-project')
+                projectStatusBarItem.name = `Vibrissa Project`
+                context.subscriptions.push(projectStatusBarItem)
+            }
+            projectStatusBarItem.show()
+
+            if (project.projectType === 'project') {
+                projectStatusBarItem.text = `$(project) Project`
+                projectStatusBarItem.tooltip = `${project.indexedFiles} files compiled\n${project.root}`
+                projectStatusBarItem.backgroundColor = undefined
+                projectStatusBarItem.color = undefined
+                projectStatusBarItem.command = undefined
+                if (project.root) projectStatusBarItem.command = { title: 'Open Project File', command: `vscode.open`, arguments: [project.root + 'vi.conf'] }
+            } else if (project.projectType === 'file') {
+                projectStatusBarItem.text = `$(file) File`
+                projectStatusBarItem.tooltip = `${project.indexedFiles} files compiled\n${project.root}`
+                projectStatusBarItem.backgroundColor = undefined
+                projectStatusBarItem.color = undefined
+                projectStatusBarItem.command = undefined
+                if (project.root) projectStatusBarItem.command = { title: 'Open Project File', command: `vscode.open`, arguments: [project.root + 'vi.conf'] }
+            } else {
+                projectStatusBarItem.text = `$(warning) No Project`
+                projectStatusBarItem.tooltip = undefined
+                projectStatusBarItem.backgroundColor = new vscode.ThemeColor('statusBarItem.warningBackground')
+                projectStatusBarItem.color = new vscode.ThemeColor('statusBarItem.warningForeground')
+                projectStatusBarItem.command = undefined
+                if (project.root) projectStatusBarItem.command = { title: 'Open Project File', command: `vscode.open`, arguments: [project.root + 'vi.conf'] }
             }
         }
         const schemeIgnore = new Set<string>([
@@ -269,7 +281,7 @@ export class LanguageClientManager implements Disposable {
         })
         vscode.workspace.onDidCloseTextDocument(e => {
             if (schemeIgnore.has(e.uri.scheme)) return
-            updateProjectStatus(e.uri)
+            updateProjectStatus(vscode.window.activeTextEditor?.document.uri)
         })
         vscode.workspace.onDidChangeTextDocument(e => {
             if (schemeIgnore.has(e.document.uri.scheme)) return

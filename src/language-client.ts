@@ -56,8 +56,13 @@ export function activate(context: vscode.ExtensionContext) {
 
         log.info(`[Language] Requesting recompile ...`)
         client.client.sendRequest('meow/compiler/recompile', { file: file.toString() })
-            .then(res => {
+            .then((res: any) => {
                 log.info(`[Language] Recompiling`, res)
+                if (res?.ok) {
+                    client?.updateCompilerStatusBarItem(context, {
+                        status: 'working',
+                    })
+                }
             })
             .catch(err => {
                 log.error(err)
@@ -117,6 +122,18 @@ export type LanguageClientManagerOptions = {
     args?: string[],
 }
 
+interface CompilerStatusNotificationArgs {
+    status: 'done' | 'failed' | 'working'
+    details?: string
+}
+
+interface ProjectStatusNotificationArgs {
+    projectType: null | 'project' | 'file'
+    contextFile: string
+    indexedFiles?: number
+    root?: string
+}
+
 export class LanguageClientManager implements Disposable {
     readonly client: LanguageClient
     private readonly context: vscode.ExtensionContext
@@ -165,53 +182,12 @@ export class LanguageClientManager implements Disposable {
             clientOptions
         )
 
-        interface CompilerStatusNotificationArgs {
-            status: 'done' | 'failed' | 'working'
-            details?: string
-        }
-
-        interface ProjectStatusNotificationArgs {
-            projectType: null | 'project' | 'file'
-            contextFile: string
-            indexedFiles?: number
-            root?: string
-        }
-
         this.compilerStatusBarItem = null
         this.compilerStatusCooldown = null
 
         this.client.onNotification('meow/compiler/status', (status: CompilerStatusNotificationArgs) => {
             if (this.compilerStatusCooldown) clearTimeout(this.compilerStatusCooldown)
-            this.compilerStatusCooldown = setTimeout(() => {
-                if (!this.compilerStatusBarItem) {
-                    this.compilerStatusBarItem = vscode.languages.createLanguageStatusItem(`vibrissa-compiler-status`, { language: utils.languageId })
-                    this.compilerStatusBarItem.name = `Vibrissa Compiler Status`
-                    context.subscriptions.push(this.compilerStatusBarItem)
-                }
-
-                switch (status.status) {
-                    case 'done':
-                        this.compilerStatusBarItem.text = `Compiled`
-                        this.compilerStatusBarItem.busy = false
-                        this.compilerStatusBarItem.severity = vscode.LanguageStatusSeverity.Information
-                        this.compilerStatusBarItem.command = { command: `${utils.languageId}.recompile`, title: 'Recompile', arguments: [] }
-                        break
-                    case 'working':
-                        this.compilerStatusBarItem.text = `Compiling`
-                        this.compilerStatusBarItem.busy = true
-                        this.compilerStatusBarItem.severity = vscode.LanguageStatusSeverity.Information
-                        this.compilerStatusBarItem.command = undefined
-                        break
-                    case 'failed':
-                        this.compilerStatusBarItem.text = `Failed`
-                        this.compilerStatusBarItem.busy = false
-                        this.compilerStatusBarItem.severity = vscode.LanguageStatusSeverity.Error
-                        this.compilerStatusBarItem.command = { command: `${utils.languageId}.recompile`, title: 'Recompile', arguments: [] }
-                        break
-                }
-
-                this.compilerStatusBarItem.detail = status.details ?? undefined
-            }, 100)
+            this.compilerStatusCooldown = setTimeout(() => this.updateCompilerStatusBarItem(context, status), 100)
         })
 
         let projectStatusBarItem: vscode.StatusBarItem | null = null
@@ -327,6 +303,37 @@ export class LanguageClientManager implements Disposable {
         log.debug(`[Language] Language server created`, serverOptions)
 
         this.context = context
+    }
+
+    updateCompilerStatusBarItem(context: vscode.ExtensionContext, status: CompilerStatusNotificationArgs) {
+        if (!this.compilerStatusBarItem) {
+            this.compilerStatusBarItem = vscode.languages.createLanguageStatusItem(`vibrissa-compiler-status`, { language: utils.languageId })
+            this.compilerStatusBarItem.name = `Vibrissa Compiler Status`
+            context.subscriptions.push(this.compilerStatusBarItem)
+        }
+
+        switch (status.status) {
+            case 'done':
+                this.compilerStatusBarItem.text = `Compiled`
+                this.compilerStatusBarItem.busy = false
+                this.compilerStatusBarItem.severity = vscode.LanguageStatusSeverity.Information
+                this.compilerStatusBarItem.command = { command: `${utils.languageId}.recompile`, title: 'Recompile', arguments: [] }
+                break
+            case 'working':
+                this.compilerStatusBarItem.text = `Compiling`
+                this.compilerStatusBarItem.busy = true
+                this.compilerStatusBarItem.severity = vscode.LanguageStatusSeverity.Information
+                this.compilerStatusBarItem.command = undefined
+                break
+            case 'failed':
+                this.compilerStatusBarItem.text = `Failed`
+                this.compilerStatusBarItem.busy = false
+                this.compilerStatusBarItem.severity = vscode.LanguageStatusSeverity.Error
+                this.compilerStatusBarItem.command = { command: `${utils.languageId}.recompile`, title: 'Recompile', arguments: [] }
+                break
+        }
+
+        this.compilerStatusBarItem.detail = status.details ?? undefined
     }
 
     public activate(): Promise<void> {

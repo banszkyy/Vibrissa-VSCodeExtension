@@ -2,7 +2,7 @@
 
 set -e
 
-dotnet run --norestore --project ./syntax_generator/SyntaxGenerator.csproj
+dotnet run --project ./syntax_generator/SyntaxGenerator.csproj
 
 npm run compile
 

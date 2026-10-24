@@ -246,7 +246,7 @@
           "name": "entity.name.type"
         }
       },
-      "match": "(struct)[\\s]+((?!(?:struct|using|alias|enum|temp|this|const|inline|void|any|u8|i8|u16|i16|u32|i32|u64|i64|f32|private|export|as|new|delete|sizeof)\\b)[a-zA-Z_@]+[a-zA-Z0-9_@]*)"
+      "match": "(struct)[\\s]+((?!(?:struct|using|alias|enum|temp|this|const|inline|void|any|u8|i8|u16|i16|u32|i32|u64|i64|f32|private|export|var|as|new|delete|sizeof)\\b)[a-zA-Z_@]+[a-zA-Z0-9_@]*)"
     },
     "alias-definition": {
       "captures": {
@@ -257,7 +257,7 @@
           "name": "entity.name.type"
         }
       },
-      "match": "(alias)\\s+((?!(?:struct|using|alias|enum|temp|this|const|inline|void|any|u8|i8|u16|i16|u32|i32|u64|i64|f32|private|export|as|new|delete|sizeof)\\b)[a-zA-Z_@]+[a-zA-Z0-9_@]*)\\s+"
+      "match": "(alias)\\s+((?!(?:struct|using|alias|enum|temp|this|const|inline|void|any|u8|i8|u16|i16|u32|i32|u64|i64|f32|private|export|var|as|new|delete|sizeof)\\b)[a-zA-Z_@]+[a-zA-Z0-9_@]*)\\s+"
     },
     "enum-definition": {
       "captures": {
@@ -278,7 +278,7 @@
           ]
         }
       },
-      "match": "(enum)\\s+((?!(?:struct|using|alias|enum|temp|this|const|inline|void|any|u8|i8|u16|i16|u32|i32|u64|i64|f32|private|export|as|new|delete|sizeof)\\b)[a-zA-Z_@]+[a-zA-Z0-9_@]*)(\\s*(:)\\s*((?!(?:struct|using|alias|enum|temp|this|const|inline|private|export|as|new|delete|sizeof)\\b)([a-zA-Z_@]+[a-zA-Z0-9_@\\*\\[\\]]*)|([a-zA-Z_@]+[a-zA-Z0-9_@\\*\\[\\]]*\\<[\\w,\\s]*\\>)))?"
+      "match": "(enum)\\s+((?!(?:struct|using|alias|enum|temp|this|const|inline|void|any|u8|i8|u16|i16|u32|i32|u64|i64|f32|private|export|var|as|new|delete|sizeof)\\b)[a-zA-Z_@]+[a-zA-Z0-9_@]*)(\\s*(:)\\s*((?!(?:struct|using|alias|enum|temp|this|const|inline|private|export|var|as|new|delete|sizeof)\\b)([a-zA-Z_@]+[a-zA-Z0-9_@\\*\\[\\]]*)|([a-zA-Z_@]+[a-zA-Z0-9_@\\*\\[\\]]*\\<[\\w,\\s]*\\>)))?"
     },
     "using": {
       "captures": {
@@ -297,7 +297,7 @@
           "name": "keyword"
         }
       },
-      "match": "\\b(struct|using|alias|enum|temp|this|const|inline|void|any|u8|i8|u16|i16|u32|i32|u64|i64|f32|private|export|as|new|delete|sizeof)\\b"
+      "match": "\\b(struct|using|alias|enum|temp|this|const|inline|void|any|u8|i8|u16|i16|u32|i32|u64|i64|f32|private|export|var|as|new|delete|sizeof)\\b"
     },
     "function-call": {
       "captures": {
@@ -305,10 +305,33 @@
           "name": "entity.name.function"
         }
       },
-      "match": "\\b((?!(?:struct|using|alias|enum|temp|this|const|inline|void|any|u8|i8|u16|i16|u32|i32|u64|i64|f32|private|export|as|new|delete|sizeof)\\b)[a-zA-Z_@]+[a-zA-Z0-9_@]*)\\b\\s*(?=\\()"
+      "match": "\\b((?!(?:struct|using|alias|enum|temp|this|const|inline|void|any|u8|i8|u16|i16|u32|i32|u64|i64|f32|private|export|var|as|new|delete|sizeof)\\b)[a-zA-Z_@]+[a-zA-Z0-9_@]*)\\b\\s*(?=\\()"
     },
     "function-definition": {
       "patterns": [
+        {
+          "captures": {
+            "2": {
+              "name": "keyword"
+            }
+          },
+          "match": "(init|deinit)\\s*(?=\\()"
+        },
+        {
+          "captures": {
+            "1": {
+              "patterns": [
+                {
+                  "include": "#type"
+                }
+              ]
+            },
+            "2": {
+              "name": "keyword"
+            }
+          },
+          "match": "((?!(?:struct|using|alias|enum|temp|this|const|inline|private|export|var|as|new|delete|sizeof)\\b)([a-zA-Z_@]+[a-zA-Z0-9_@\\*\\[\\]]*)|([a-zA-Z_@]+[a-zA-Z0-9_@\\*\\[\\]]*\\<[\\w,\\s]*\\>))\\s+(init|deinit)\\s*(?=\\()"
+        },
         {
           "captures": {
             "1": {
@@ -322,7 +345,7 @@
               "name": "entity.name.function"
             }
           },
-          "match": "((?!(?:struct|using|alias|enum|temp|this|const|inline|private|export|as|new|delete|sizeof)\\b)([a-zA-Z_@]+[a-zA-Z0-9_@\\*\\[\\]]*)|([a-zA-Z_@]+[a-zA-Z0-9_@\\*\\[\\]]*\\<[\\w,\\s]*\\>))\\s+((?!(?:struct|using|alias|enum|temp|this|const|inline|void|any|u8|i8|u16|i16|u32|i32|u64|i64|f32|private|export|as|new|delete|sizeof)\\b)[a-zA-Z_@]+[a-zA-Z0-9_@]*)\\s*(?=\\()"
+          "match": "((?!(?:struct|using|alias|enum|temp|this|const|inline|private|export|var|as|new|delete|sizeof)\\b)([a-zA-Z_@]+[a-zA-Z0-9_@\\*\\[\\]]*)|([a-zA-Z_@]+[a-zA-Z0-9_@\\*\\[\\]]*\\<[\\w,\\s]*\\>))\\s+((?!(?:struct|using|alias|enum|temp|this|const|inline|void|any|u8|i8|u16|i16|u32|i32|u64|i64|f32|private|export|var|as|new|delete|sizeof)\\b)[a-zA-Z_@]+[a-zA-Z0-9_@]*)\\s*(?=\\()"
         },
         {
           "captures": {
@@ -349,7 +372,7 @@
               ]
             }
           },
-          "match": "((?!(?:struct|using|alias|enum|temp|this|const|inline|private|export|as|new|delete|sizeof)\\b)([a-zA-Z_@]+[a-zA-Z0-9_@\\*\\[\\]]*)|([a-zA-Z_@]+[a-zA-Z0-9_@\\*\\[\\]]*\\<[\\w,\\s]*\\>))\\s+((?!(?:struct|using|alias|enum|temp|this|const|inline|void|any|u8|i8|u16|i16|u32|i32|u64|i64|f32|private|export|as|new|delete|sizeof)\\b)[a-zA-Z_@]+[a-zA-Z0-9_@]*)\\s*(<.*>)\\s*(?=\\()"
+          "match": "((?!(?:struct|using|alias|enum|temp|this|const|inline|private|export|var|as|new|delete|sizeof)\\b)([a-zA-Z_@]+[a-zA-Z0-9_@\\*\\[\\]]*)|([a-zA-Z_@]+[a-zA-Z0-9_@\\*\\[\\]]*\\<[\\w,\\s]*\\>))\\s+((?!(?:struct|using|alias|enum|temp|this|const|inline|void|any|u8|i8|u16|i16|u32|i32|u64|i64|f32|private|export|var|as|new|delete|sizeof)\\b)[a-zA-Z_@]+[a-zA-Z0-9_@]*)\\s*(<.*>)\\s*(?=\\()"
         }
       ]
     },
@@ -363,7 +386,7 @@
           ]
         }
       },
-      "match": "\\b((?!(?:struct|using|alias|enum|temp|this|const|inline|private|export|as|new|delete|sizeof)\\b)([a-zA-Z_@]+[a-zA-Z0-9_@\\*\\[\\]]*)|([a-zA-Z_@]+[a-zA-Z0-9_@\\*\\[\\]]*\\<[\\w,\\s]*\\>))\\s+((?!(?:struct|using|alias|enum|temp|this|const|inline|void|any|u8|i8|u16|i16|u32|i32|u64|i64|f32|private|export|as|new|delete|sizeof)\\b)[a-zA-Z_@]+[a-zA-Z0-9_@]*)\\b"
+      "match": "\\b((?!(?:struct|using|alias|enum|temp|this|const|inline|private|export|var|as|new|delete|sizeof)\\b)([a-zA-Z_@]+[a-zA-Z0-9_@\\*\\[\\]]*)|([a-zA-Z_@]+[a-zA-Z0-9_@\\*\\[\\]]*\\<[\\w,\\s]*\\>))\\s+((?!(?:struct|using|alias|enum|temp|this|const|inline|void|any|u8|i8|u16|i16|u32|i32|u64|i64|f32|private|export|var|as|new|delete|sizeof)\\b)[a-zA-Z_@]+[a-zA-Z0-9_@]*)\\b"
     },
     "field-access": {
       "captures": {
@@ -371,7 +394,7 @@
           "name": "entity.name.variable"
         }
       },
-      "match": "\\.\\s*((?!(?:struct|using|alias|enum|temp|this|const|inline|void|any|u8|i8|u16|i16|u32|i32|u64|i64|f32|private|export|as|new|delete|sizeof)\\b)[a-zA-Z_@]+[a-zA-Z0-9_@]*)\\b"
+      "match": "\\.\\s*((?!(?:struct|using|alias|enum|temp|this|const|inline|void|any|u8|i8|u16|i16|u32|i32|u64|i64|f32|private|export|var|as|new|delete|sizeof)\\b)[a-zA-Z_@]+[a-zA-Z0-9_@]*)\\b"
     },
     "strings": {
       "patterns": [

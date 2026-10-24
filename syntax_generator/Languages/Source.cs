@@ -256,6 +256,23 @@ static class Source
             Patterns = [
                 new()
                 {
+                    Match = @$"({BuiltinFunctionIdentifiers.Initializer}|{BuiltinFunctionIdentifiers.Deinitializer})\s*(?=\()",
+                    Captures = new()
+                    {
+                        { 2, new(Name.Keyword) },
+                    }
+                },
+                new()
+                {
+                    Match = @$"({typeRegex})\s+({BuiltinFunctionIdentifiers.Initializer}|{BuiltinFunctionIdentifiers.Deinitializer})\s*(?=\()",
+                    Captures = new()
+                    {
+                        { 1, new() { Patterns = [ new() { Include = "#type" } ] } },
+                        { 2, new(Name.Keyword) },
+                    }
+                },
+                new()
+                {
                     Match = @$"({typeRegex})\s+({identifier})\s*(?=\()",
                     Captures = new()
                     {

@@ -7,6 +7,7 @@ import { extensionId, isVirtualWorkspace, languageId } from './utils'
 import * as notebookSerializer from './notebook-serializer'
 import * as notebookController from './notebook-controller'
 import * as profiling from './profiling'
+import * as l10n from '@vscode/l10n'
 
 export let log: vscode.LogOutputChannel
 
@@ -47,9 +48,9 @@ function activateTrusted(context: vscode.ExtensionContext) {
                         if (result.status === updater.FetchUpdateStatus.NewVersion) {
                             vscode.window.showInformationMessage(
                                 result.release ? `${texts.UPDATE_AVALIABLE}\n[Details](${result.release?.html_url})` : texts.UPDATE_AVALIABLE,
-                                'Update', 'Shut up')
+                                l10n.t('Update'), l10n.t('Shut up'))
                                 .then(value => {
-                                    if (value === 'Update') {
+                                    if (value === l10n.t('Update')) {
                                         deactivate()
                                         vscode.window.withProgress({
                                             location: vscode.ProgressLocation.Notification,
@@ -67,9 +68,9 @@ function activateTrusted(context: vscode.ExtensionContext) {
                                     }
                                 }, reject)
                         } else if (result.status === updater.FetchUpdateStatus.Nonexistent) {
-                            vscode.window.showWarningMessage(texts.NOT_FOUND, 'Download', 'Show Settings', 'Shut up')
+                            vscode.window.showWarningMessage(texts.NOT_FOUND, l10n.t('Download'), l10n.t('Show Settings'), l10n.t('Shut up'))
                                 .then(value => {
-                                    if (value === 'Download') {
+                                    if (value === l10n.t('Download')) {
                                         deactivate()
                                         vscode.window.withProgress({
                                             location: vscode.ProgressLocation.Notification,
@@ -82,7 +83,7 @@ function activateTrusted(context: vscode.ExtensionContext) {
                                             activate(context)
                                             reject(`${texts.FAILED} ${reason}`)
                                         })
-                                    } else if (value === 'Show Settings') {
+                                    } else if (value === l10n.t('Show Settings')) {
                                         config.goToConfig(updateConfig.pathConfigKey)
                                         resolve()
                                     } else {
@@ -102,26 +103,26 @@ function activateTrusted(context: vscode.ExtensionContext) {
         const tasks = []
 
         tasks.push(interactiveUpdate(extConfig.languageServer, {
-            NOT_FOUND: 'Language server does not exists',
-            UPDATE_AVALIABLE: 'Update avaliable for the language server',
-            PROGRESS: 'Downloading the language server',
-            FAILED: 'Failed to update the language server',
+            NOT_FOUND: l10n.t('Language server does not exists'),
+            UPDATE_AVALIABLE: l10n.t('Update avaliable for the language server'),
+            PROGRESS: l10n.t('Downloading the language server'),
+            FAILED: l10n.t('Failed to update the language server'),
         }, languageClient.deactivate, languageClient.activate)
             .catch(reason => vscode.window.showWarningMessage(reason)))
 
         tasks.push(interactiveUpdate(extConfig.debuggerHost, {
-            NOT_FOUND: 'Debug host does not exists',
-            UPDATE_AVALIABLE: 'Update avaliable for the debug host',
-            PROGRESS: 'Downloading the debug host',
-            FAILED: 'Failed to update the debug host',
+            NOT_FOUND: l10n.t('Debug host does not exists'),
+            UPDATE_AVALIABLE: l10n.t('Update avaliable for the debug host'),
+            PROGRESS: l10n.t('Downloading the debug host'),
+            FAILED: l10n.t('Failed to update the debug host'),
         }, debuggerClient.deactivate, debuggerClient.activate)
             .catch(reason => vscode.window.showWarningMessage(reason)))
 
         tasks.push(interactiveUpdate(extConfig.runtime, {
-            NOT_FOUND: 'Runtime does not exists',
-            UPDATE_AVALIABLE: 'Update avaliable for the runtime',
-            PROGRESS: 'Downloading the runtime',
-            FAILED: 'Failed to update the runtime',
+            NOT_FOUND: l10n.t('Runtime does not exists'),
+            UPDATE_AVALIABLE: l10n.t('Update avaliable for the runtime'),
+            PROGRESS: l10n.t('Downloading the runtime'),
+            FAILED: l10n.t('Failed to update the runtime'),
         }, () => { }, () => { })
             .catch(reason => vscode.window.showWarningMessage(reason)))
 

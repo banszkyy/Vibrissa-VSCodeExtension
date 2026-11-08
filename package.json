@@ -34,6 +34,7 @@
         "theme": "dark"
     },
     "main": "./out/extension",
+    "l10n": "./l10n",
     "contributes": {
         "configuration": {
             "title": "Vibrissa",
@@ -365,6 +366,7 @@
         "@types/adm-zip": "^0.5.8",
         "@types/node": "^26.0.1",
         "@types/vscode": "^1.88.0",
+        "@vscode/l10n-dev": "^0.0.35",
         "@vscode/test-cli": "^0.0.15",
         "@vscode/test-electron": "^3.0.0",
         "@vscode/vsce": "^3.9.2",
@@ -372,6 +374,7 @@
         "vsce": "^2.15.0"
     },
     "dependencies": {
+        "@vscode/l10n": "^0.0.18",
         "adm-zip": "^0.6.0",
         "vscode-jsonrpc": "^8.2.1",
         "vscode-languageclient": "^10.0.1"

@@ -7,6 +7,7 @@ import * as utils from './utils'
 import { log } from './extension'
 import { LatestRelease, LatestReleaseAsset } from './github-api-schemas'
 import { globalStateChanged } from './language-client'
+import * as l10n from '@vscode/l10n'
 
 const userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36'
 
@@ -63,7 +64,7 @@ export async function checkForUpdates(context: vscode.ExtensionContext, options:
         }
     }
 
-    progress?.report({ message: 'Fetching latest release info' })
+    progress?.report({ message: l10n.t('Fetching latest release info') })
     log.trace(`[Updater] Getting latest release from "${options.githubRepository}"`)
     const latest = await getLatestRelease(options, token)
 
@@ -109,7 +110,7 @@ export function gc(context: vscode.ExtensionContext) {
 export async function update(context: vscode.ExtensionContext, options: UpdateOptions, progress: vscode.Progress<{ message?: string | undefined; increment?: number | undefined }> | null = null, token: vscode.CancellationToken | null = null) {
     log.debug(`[Updater] Updating ${options.id}`)
 
-    progress?.report({ message: 'Fetching latest release info' })
+    progress?.report({ message: l10n.t('Fetching latest release info') })
     log.trace(`[Updater] Getting latest release from "${options.githubRepository}"`)
     const latest = await getLatestRelease(options, token)
 
@@ -138,7 +139,7 @@ export async function update(context: vscode.ExtensionContext, options: UpdateOp
         throw new Error(`Already exists`)
     }
 
-    progress?.report({ message: 'Preparing' })
+    progress?.report({ message: l10n.t('Preparing') })
 
     fs.mkdirSync(tempDirectory, { recursive: true })
     fs.mkdirSync(targetDirectory, { recursive: true })
@@ -152,15 +153,15 @@ export async function update(context: vscode.ExtensionContext, options: UpdateOp
         throw new Error(`Stream writer for file "${downloadFilename}" failed to create`)
     }
 
-    progress?.report({ message: 'Downloading release asset' })
+    progress?.report({ message: l10n.t('Downloading release asset') })
     log.trace(`[Updater] Downloading file from \"${latestAsset.browser_download_url}\"`)
     const assetRes = await utils.download(https, latestAsset.browser_download_url, token)
     log.trace(`[Updater] ${assetRes.statusCode} ${assetRes.statusMessage}`)
     await utils.downloadFile(assetRes, file, (percent) => {
-        progress?.report({ message: 'Downloading release asset', increment: percent * 100 })
+        progress?.report({ message: l10n.t('Downloading release asset'), increment: percent * 100 })
     })
 
-    progress?.report({ message: 'Extracting' })
+    progress?.report({ message: l10n.t('Extracting') })
     log.trace(`[Updater] Extracting \"${downloadFilename}\" to \"${targetDirectory}\"`)
     const zip = new AdmZip(downloadFilename)
     await zip.extractAllToAsync(targetDirectory, true, true)

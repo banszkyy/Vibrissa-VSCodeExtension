@@ -10,6 +10,7 @@ import { log } from './extension'
 import * as config from './config'
 import * as fs from 'fs'
 import { AllocationDecorations } from './code-decorations'
+import * as l10n from '@vscode/l10n'
 
 export let client: LanguageClientManager | null = null
 let decorations: AllocationDecorations | null = null
@@ -21,9 +22,9 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(globalStateChanged = new vscode.EventEmitter<string>())
 
     const languageServerChanged = () => {
-        vscode.window.showInformationMessage(`Path to the language server was changed. Do you want to restart the server?`, 'Yes', 'No')
+        vscode.window.showInformationMessage(l10n.t('Path to the language server was changed.'), l10n.t('Restart Server'), l10n.t('Ok'))
             .then(e => {
-                if (e === 'Yes') {
+                if (e === l10n.t('Restart Server')) {
                     restartServer(context)
                 }
             })
@@ -88,13 +89,13 @@ function startServer(context: vscode.ExtensionContext) {
 
     if (!serverPath) {
         log.warn(`[Language] Language server not set`)
-        vscode.window.showErrorMessage(`Language server not set`)
+        vscode.window.showErrorMessage(l10n.t('Language server not set'))
         return Promise.resolve()
     }
 
     if (!fs.existsSync(serverPath)) {
         log.warn(`[Language] Language server "${serverPath}" not found`)
-        vscode.window.showErrorMessage(`Language server "${serverPath}" not found`)
+        vscode.window.showErrorMessage(l10n.t('Language server "{0}" not found', serverPath))
         return Promise.resolve()
     }
 
@@ -217,32 +218,32 @@ export class LanguageClientManager implements Disposable {
 
             if (!projectStatusBarItem) {
                 projectStatusBarItem = vscode.window.createStatusBarItem('vibrissa-project')
-                projectStatusBarItem.name = `Vibrissa Project`
+                projectStatusBarItem.name = l10n.t('Vibrissa Project')
                 context.subscriptions.push(projectStatusBarItem)
             }
             projectStatusBarItem.show()
 
             if (project.projectType === 'project') {
-                projectStatusBarItem.text = `$(project) Project`
-                projectStatusBarItem.tooltip = `${project.indexedFiles} files compiled\n${project.root}`
+                projectStatusBarItem.text = `$(project) ${l10n.t('Project')}`
+                projectStatusBarItem.tooltip = `${l10n.t('{0} files compiled', project.indexedFiles ?? 0)}\n${project.root}`
                 projectStatusBarItem.backgroundColor = undefined
                 projectStatusBarItem.color = undefined
                 projectStatusBarItem.command = undefined
-                if (project.root) projectStatusBarItem.command = { title: 'Open Project File', command: `vscode.open`, arguments: [project.root + 'vi.conf'] }
+                if (project.root) projectStatusBarItem.command = { title: l10n.t('Open Project File'), command: `vscode.open`, arguments: [project.root + 'vi.conf'] }
             } else if (project.projectType === 'file') {
-                projectStatusBarItem.text = `$(file) File`
+                projectStatusBarItem.text = `$(file) ${l10n.t('File')}`
                 projectStatusBarItem.tooltip = `${project.indexedFiles} files compiled\n${project.root}`
                 projectStatusBarItem.backgroundColor = undefined
                 projectStatusBarItem.color = undefined
                 projectStatusBarItem.command = undefined
-                if (project.root) projectStatusBarItem.command = { title: 'Open Project File', command: `vscode.open`, arguments: [project.root + 'vi.conf'] }
+                if (project.root) projectStatusBarItem.command = { title: l10n.t('Open Project File'), command: `vscode.open`, arguments: [project.root + 'vi.conf'] }
             } else {
-                projectStatusBarItem.text = `$(warning) No Project`
+                projectStatusBarItem.text = `$(warning) ${l10n.t('No Project')}`
                 projectStatusBarItem.tooltip = undefined
                 projectStatusBarItem.backgroundColor = new vscode.ThemeColor('statusBarItem.warningBackground')
                 projectStatusBarItem.color = new vscode.ThemeColor('statusBarItem.warningForeground')
                 projectStatusBarItem.command = undefined
-                if (project.root) projectStatusBarItem.command = { title: 'Open Project File', command: `vscode.open`, arguments: [project.root + 'vi.conf'] }
+                if (project.root) projectStatusBarItem.command = { title: l10n.t('Open Project File'), command: `vscode.open`, arguments: [project.root + 'vi.conf'] }
             }
         }
         const schemeIgnore = new Set<string>([
@@ -308,28 +309,28 @@ export class LanguageClientManager implements Disposable {
     updateCompilerStatusBarItem(context: vscode.ExtensionContext, status: CompilerStatusNotificationArgs) {
         if (!this.compilerStatusBarItem) {
             this.compilerStatusBarItem = vscode.languages.createLanguageStatusItem(`vibrissa-compiler-status`, { language: utils.languageId })
-            this.compilerStatusBarItem.name = `Vibrissa Compiler Status`
+            this.compilerStatusBarItem.name = l10n.t('Vibrissa Compiler Status')
             context.subscriptions.push(this.compilerStatusBarItem)
         }
 
         switch (status.status) {
             case 'done':
-                this.compilerStatusBarItem.text = `Compiled`
+                this.compilerStatusBarItem.text = l10n.t('Compiled')
                 this.compilerStatusBarItem.busy = false
                 this.compilerStatusBarItem.severity = vscode.LanguageStatusSeverity.Information
-                this.compilerStatusBarItem.command = { command: `${utils.languageId}.recompile`, title: 'Recompile', arguments: [] }
+                this.compilerStatusBarItem.command = { command: `${utils.languageId}.recompile`, title: l10n.t('Recompile'), arguments: [] }
                 break
             case 'working':
-                this.compilerStatusBarItem.text = `Compiling`
+                this.compilerStatusBarItem.text = l10n.t('Compiling')
                 this.compilerStatusBarItem.busy = true
                 this.compilerStatusBarItem.severity = vscode.LanguageStatusSeverity.Information
                 this.compilerStatusBarItem.command = undefined
                 break
             case 'failed':
-                this.compilerStatusBarItem.text = `Failed`
+                this.compilerStatusBarItem.text = l10n.t('Failed')
                 this.compilerStatusBarItem.busy = false
                 this.compilerStatusBarItem.severity = vscode.LanguageStatusSeverity.Error
-                this.compilerStatusBarItem.command = { command: `${utils.languageId}.recompile`, title: 'Recompile', arguments: [] }
+                this.compilerStatusBarItem.command = { command: `${utils.languageId}.recompile`, title: l10n.t('Recompile'), arguments: [] }
                 break
         }
 

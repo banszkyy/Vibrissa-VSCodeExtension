@@ -6,6 +6,7 @@ import * as config from './config'
 import * as fs from 'fs'
 import { languageId } from './utils'
 import { log } from './extension'
+import * as l10n from '@vscode/l10n'
 
 const runMode: 'external' | 'server' | 'inline' = 'external'
 
@@ -32,18 +33,18 @@ export function activate(context: vscode.ExtensionContext) {
 
                     if (executable) { return executable }
 
-                    const debuggerHostConfig = config.getConfig(context).debuggerHost;
+                    const debuggerHostConfig = config.getConfig(context).debuggerHost
                     const hostPath = debuggerHostConfig.path()
 
                     if (!hostPath) {
                         log.warn(`[Debugger] Debug server not set`)
-                        vscode.window.showErrorMessage(`Debug server not set`)
+                        vscode.window.showErrorMessage(l10n.t('Debug server not set'))
                         return null
                     }
 
                     if (!fs.existsSync(hostPath)) {
                         log.warn(`[Debugger] Debug server "${hostPath}" not found`)
-                        vscode.window.showErrorMessage(`Debug server "${hostPath}" not found`)
+                        vscode.window.showErrorMessage(l10n.t('Debug server "{0}" not found', hostPath))
                         return null
                     }
 
@@ -97,7 +98,7 @@ export function activate(context: vscode.ExtensionContext) {
 
         const targetResource = resource ?? vscode.window.activeTextEditor?.document.uri ?? null
         if (!targetResource) {
-            vscode.window.showErrorMessage(`No document opened for debugging`)
+            vscode.window.showErrorMessage(l10n.t('No document opened for debugging'))
             return
         }
 
@@ -116,7 +117,7 @@ export function activate(context: vscode.ExtensionContext) {
         })
             .then(result => {
                 if (!result) {
-                    vscode.window.showErrorMessage('Failed to start debugging')
+                    vscode.window.showErrorMessage(l10n.t('Failed to start debugging'))
                     log.warn('[Debugger] Failed to start debugging')
                 } else {
                     log.info('[Debugger] Debugging started')
@@ -131,7 +132,7 @@ export function activate(context: vscode.ExtensionContext) {
 
         const targetResource = resource ?? vscode.window.activeTextEditor?.document.uri ?? null
         if (!targetResource) {
-            vscode.window.showErrorMessage(`No document opened for profiling`)
+            vscode.window.showErrorMessage(l10n.t('No document opened for profiling'))
             return
         }
 
@@ -151,7 +152,7 @@ export function activate(context: vscode.ExtensionContext) {
         })
             .then(result => {
                 if (!result) {
-                    vscode.window.showErrorMessage('Failed to start profiling')
+                    vscode.window.showErrorMessage(l10n.t('Failed to start profiling'))
                     log.warn('[Debugger] Failed to start profiling')
                 } else {
                     log.info('[Debugger] Profiling started')
@@ -166,7 +167,7 @@ export function activate(context: vscode.ExtensionContext) {
 
         const targetResource = resource ?? vscode.window.activeTextEditor?.document.uri ?? null
         if (!targetResource) {
-            vscode.window.showErrorMessage(`No document opened for debugging`)
+            vscode.window.showErrorMessage(l10n.t('No document opened for debugging'))
             return
         }
 
@@ -185,7 +186,7 @@ export function activate(context: vscode.ExtensionContext) {
         })
             .then(result => {
                 if (!result) {
-                    vscode.window.showErrorMessage('Failed to start debugging')
+                    vscode.window.showErrorMessage(l10n.t('Failed to start debugging'))
                     log.warn('[Debugger] Failed to start debugging (no debug)')
                 } else {
                     log.info('[Debugger] Debugging started (no debug)')
@@ -233,7 +234,7 @@ class ConfigurationProvider implements vscode.DebugConfigurationProvider {
         }
 
         if (!config['program']) {
-            return vscode.window.showInformationMessage("Cannot find a program to debug").then(_ => {
+            return vscode.window.showInformationMessage(l10n.t('Cannot find a program to debug')).then(_ => {
                 return undefined // abort launch
             })
         }
@@ -244,6 +245,6 @@ class ConfigurationProvider implements vscode.DebugConfigurationProvider {
     }
 }
 export function deactivate() {
-    
+
 }
 

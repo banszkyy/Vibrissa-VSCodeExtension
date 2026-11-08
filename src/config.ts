@@ -1,5 +1,6 @@
 import * as vscode from 'vscode'
 import * as utils from './utils'
+import * as l10n from '@vscode/l10n'
 
 const dotnetRID = (() => {
     switch (process.platform) {
@@ -16,7 +17,7 @@ const dotnetRID = (() => {
             }
             break
     }
-    vscode.window.showErrorMessage(`The current platform ${process.platform}-${process.arch} is not supported`)
+    vscode.window.showErrorMessage(l10n.t('The current platform {0} is not supported', `${process.platform}-${process.arch}`))
     return ''
 })()
 

@@ -159,10 +159,6 @@
         ],
         "snippets": [
             {
-                "language": "vibrissa",
-                "path": "./snippets/meow.json"
-            },
-            {
                 "language": "vibrissa-test-result",
                 "path": "./snippets/meow-test-result.json"
             }

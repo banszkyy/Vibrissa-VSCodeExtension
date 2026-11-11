@@ -3,7 +3,8 @@ import {
     LanguageClient,
     LanguageClientOptions,
     ServerOptions,
-    Disposable
+    Disposable,
+    RequestType
 } from 'vscode-languageclient/node'
 import * as utils from './utils'
 import { log } from './extension'
@@ -324,7 +325,7 @@ export class LanguageClientManager implements Disposable {
                 this.compilerStatusBarItem.text = l10n.t('Compiling')
                 this.compilerStatusBarItem.busy = true
                 this.compilerStatusBarItem.severity = vscode.LanguageStatusSeverity.Information
-                this.compilerStatusBarItem.command = undefined
+                this.compilerStatusBarItem.command = { command: `${utils.languageId}.recompile`, title: l10n.t('Recompile'), arguments: [] }
                 break
             case 'failed':
                 this.compilerStatusBarItem.text = l10n.t('Failed')

@@ -311,14 +311,6 @@
       "patterns": [
         {
           "captures": {
-            "2": {
-              "name": "keyword"
-            }
-          },
-          "match": "(init|deinit)\\s*(?=\\()"
-        },
-        {
-          "captures": {
             "1": {
               "patterns": [
                 {
@@ -335,13 +327,46 @@
         {
           "captures": {
             "1": {
+              "name": "keyword"
+            }
+          },
+          "match": "(init|deinit)\\s*(?=\\()"
+        },
+        {
+          "captures": {
+            "1": {
               "patterns": [
                 {
                   "include": "#type"
                 }
               ]
             },
-            "2": {
+            "4": {
+              "name": "entity.name.function"
+            },
+            "5": {
+              "name": "punctuation"
+            },
+            "6": {
+              "patterns": [
+                {
+                  "include": "#parameter-definition"
+                }
+              ]
+            }
+          },
+          "match": "((?!(?:struct|using|alias|enum|temp|this|const|inline|private|export|pack|var|as|new|delete|sizeof)\\b)([a-zA-Z_@]+[a-zA-Z0-9_@\\*\\[\\]]*)|([a-zA-Z_@]+[a-zA-Z0-9_@\\*\\[\\]]*\\<[\\w,\\s]*\\>))\\s+((?!(?:struct|using|alias|enum|temp|this|const|inline|void|any|u8|i8|u16|i16|u32|i32|u64|i64|f32|private|export|pack|var|as|new|delete|sizeof)\\b)[a-zA-Z_@]+[a-zA-Z0-9_@]*)\\s*(\\()([a-zA-Z0-9@\\[\\]&\\*<>_\\s,]*)"
+        },
+        {
+          "captures": {
+            "1": {
+              "patterns": [
+                {
+                  "include": "#type"
+                }
+              ]
+            },
+            "4": {
               "name": "entity.name.function"
             }
           },
@@ -356,10 +381,47 @@
                 }
               ]
             },
-            "2": {
+            "4": {
               "name": "entity.name.function"
             },
-            "3": {
+            "5": {
+              "patterns": [
+                {
+                  "captures": {
+                    "1": {
+                      "name": "entity.name.type"
+                    }
+                  },
+                  "match": "\\b(\\w+)\\b"
+                }
+              ]
+            },
+            "6": {
+              "name": "punctuation"
+            },
+            "7": {
+              "patterns": [
+                {
+                  "include": "#parameter-definition"
+                }
+              ]
+            }
+          },
+          "match": "((?!(?:struct|using|alias|enum|temp|this|const|inline|private|export|pack|var|as|new|delete|sizeof)\\b)([a-zA-Z_@]+[a-zA-Z0-9_@\\*\\[\\]]*)|([a-zA-Z_@]+[a-zA-Z0-9_@\\*\\[\\]]*\\<[\\w,\\s]*\\>))\\s+((?!(?:struct|using|alias|enum|temp|this|const|inline|void|any|u8|i8|u16|i16|u32|i32|u64|i64|f32|private|export|pack|var|as|new|delete|sizeof)\\b)[a-zA-Z_@]+[a-zA-Z0-9_@]*)\\s*(<.*>)\\s*(\\()([a-zA-Z0-9@\\[\\]&\\*<>_\\s,]*)"
+        },
+        {
+          "captures": {
+            "1": {
+              "patterns": [
+                {
+                  "include": "#type"
+                }
+              ]
+            },
+            "4": {
+              "name": "entity.name.function"
+            },
+            "5": {
               "patterns": [
                 {
                   "captures": {
@@ -384,6 +446,21 @@
               "include": "#type"
             }
           ]
+        }
+      },
+      "match": "\\b((?!(?:struct|using|alias|enum|temp|this|const|inline|private|export|pack|var|as|new|delete|sizeof)\\b)([a-zA-Z_@]+[a-zA-Z0-9_@\\*\\[\\]]*)|([a-zA-Z_@]+[a-zA-Z0-9_@\\*\\[\\]]*\\<[\\w,\\s]*\\>))\\s+((?!(?:struct|using|alias|enum|temp|this|const|inline|void|any|u8|i8|u16|i16|u32|i32|u64|i64|f32|private|export|pack|var|as|new|delete|sizeof)\\b)[a-zA-Z_@]+[a-zA-Z0-9_@]*)\\b"
+    },
+    "parameter-definition": {
+      "captures": {
+        "1": {
+          "patterns": [
+            {
+              "include": "#type"
+            }
+          ]
+        },
+        "4": {
+          "name": "variable.parameter"
         }
       },
       "match": "\\b((?!(?:struct|using|alias|enum|temp|this|const|inline|private|export|pack|var|as|new|delete|sizeof)\\b)([a-zA-Z_@]+[a-zA-Z0-9_@\\*\\[\\]]*)|([a-zA-Z_@]+[a-zA-Z0-9_@\\*\\[\\]]*\\<[\\w,\\s]*\\>))\\s+((?!(?:struct|using|alias|enum|temp|this|const|inline|void|any|u8|i8|u16|i16|u32|i32|u64|i64|f32|private|export|pack|var|as|new|delete|sizeof)\\b)[a-zA-Z_@]+[a-zA-Z0-9_@]*)\\b"

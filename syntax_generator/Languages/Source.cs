@@ -256,14 +256,6 @@ static class Source
             Patterns = [
                 new()
                 {
-                    Match = @$"({BuiltinFunctionIdentifiers.Initializer}|{BuiltinFunctionIdentifiers.Deinitializer})\s*(?=\()",
-                    Captures = new()
-                    {
-                        { 2, new(Name.Keyword) },
-                    }
-                },
-                new()
-                {
                     Match = @$"({typeRegex})\s+({BuiltinFunctionIdentifiers.Initializer}|{BuiltinFunctionIdentifiers.Deinitializer})\s*(?=\()",
                     Captures = new()
                     {
@@ -273,11 +265,51 @@ static class Source
                 },
                 new()
                 {
+                    Match = @$"({BuiltinFunctionIdentifiers.Initializer}|{BuiltinFunctionIdentifiers.Deinitializer})\s*(?=\()",
+                    Captures = new()
+                    {
+                        { 1, new(Name.Keyword) },
+                    }
+                },
+                new()
+                {
+                    Match = @$"({typeRegex})\s+({identifier})\s*(\()([a-zA-Z0-9@\[\]&\*<>_\s,]*)",
+                    Captures = new()
+                    {
+                        { 1, new() { Patterns = [ new() { Include = "#type" } ] } },
+                        { 4, new(Name.EntityNameFunction) },
+                        { 5, new(Name.Punctuation) },
+                        { 6, new() { Patterns = [ new() { Include = "#parameter-definition" } ] } },
+                    }
+                },
+                new()
+                {
                     Match = @$"({typeRegex})\s+({identifier})\s*(?=\()",
                     Captures = new()
                     {
                         { 1, new() { Patterns = [ new() { Include = "#type" } ] } },
-                        { 2, new(Name.EntityNameFunction) },
+                        { 4, new(Name.EntityNameFunction) },
+                    }
+                },
+                new()
+                {
+                    Match = @$"({typeRegex})\s+({identifier})\s*(<.*>)\s*(\()([a-zA-Z0-9@\[\]&\*<>_\s,]*)",
+                    Captures = new()
+                    {
+                        { 1, new() { Patterns = [ new() { Include = "#type" } ] } },
+                        { 4, new(Name.EntityNameFunction) },
+                        { 5, new() { Patterns = [
+                            new()
+                            {
+                                Match = @$"\b(\w+)\b",
+                                Captures = new()
+                                {
+                                    { 1, new(Name.EntityNameType) }
+                                }
+                            }
+                        ] } },
+                        { 6, new(Name.Punctuation) },
+                        { 7, new() { Patterns = [ new() { Include = "#parameter-definition" } ] } },
                     }
                 },
                 new()
@@ -286,8 +318,8 @@ static class Source
                     Captures = new()
                     {
                         { 1, new() { Patterns = [ new() { Include = "#type" } ] } },
-                        { 2, new(Name.EntityNameFunction) },
-                        { 3, new() { Patterns = [
+                        { 4, new(Name.EntityNameFunction) },
+                        { 5, new() { Patterns = [
                             new()
                             {
                                 Match = @$"\b(\w+)\b",
@@ -308,6 +340,16 @@ static class Source
             Captures = new()
             {
                 { 1, new() { Patterns = [ new() { Include = "#type" } ] } },
+            }
+        };
+
+        repository["parameter-definition"] = new Pattern()
+        {
+            Match = @$"\b({typeRegex})\s+({identifier})\b",
+            Captures = new()
+            {
+                { 1, new() { Patterns = [ new() { Include = "#type" } ] } },
+                { 4, new(Name.VariableParameter) },
             }
         };
 

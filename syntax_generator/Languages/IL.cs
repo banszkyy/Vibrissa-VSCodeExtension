@@ -28,7 +28,7 @@ static class VibrissaIL
 
         repository["instruction"] = new Pattern()
         {
-            Match = @"^\s*([0-9]+:)[ \t]+([a-zA-Z0-9]+)[ \t]*([a-zA-Z0-9\[\] \<\>\+\-]*)",
+            Match = @"^\s*([0-9]+:)?[ \t]+([a-zA-Z0-9]+)[ \t]*([a-zA-Z0-9\[\] \<\>\+\-]*)",
             Captures = new()
             {
                 { 1, new(Name.Comment) },
@@ -52,7 +52,7 @@ static class VibrissaIL
                 },
                 new()
                 {
-                    Match = "\\b(BYTE|WORD|DWORD|QWORD)\\b",
+                    Match = "\\b(i8|i16|i32|i64)\\b",
                     Captures = new()
                     {
                         { 1, new(Name.EntityNameType) },

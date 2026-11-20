@@ -351,6 +351,9 @@
               "patterns": [
                 {
                   "include": "#parameter-definition"
+                },
+                {
+                  "include": "#keyword"
                 }
               ]
             }
@@ -403,6 +406,9 @@
               "patterns": [
                 {
                   "include": "#parameter-definition"
+                },
+                {
+                  "include": "#keyword"
                 }
               ]
             }

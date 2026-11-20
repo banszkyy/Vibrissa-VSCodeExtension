@@ -279,7 +279,7 @@ static class Source
                         { 1, new() { Patterns = [ new() { Include = "#type" } ] } },
                         { 4, new(Name.EntityNameFunction) },
                         { 5, new(Name.Punctuation) },
-                        { 6, new() { Patterns = [ new() { Include = "#parameter-definition" } ] } },
+                        { 6, new() { Patterns = [ new() { Include = "#parameter-definition" }, new() { Include = "#keyword" } ] } },
                     }
                 },
                 new()
@@ -309,7 +309,7 @@ static class Source
                             }
                         ] } },
                         { 6, new(Name.Punctuation) },
-                        { 7, new() { Patterns = [ new() { Include = "#parameter-definition" } ] } },
+                        { 7, new() { Patterns = [ new() { Include = "#parameter-definition" }, new() { Include = "#keyword" } ] } },
                     }
                 },
                 new()
